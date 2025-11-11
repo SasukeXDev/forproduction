@@ -5,5 +5,6 @@ cryptography
 pyrofork
 python-dotenv
 tgcrypto
-uvloop
 pymongo
+uvloop==0.19.0
+pyrogram==2.0.106
