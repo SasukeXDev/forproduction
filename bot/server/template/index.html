@@ -86,13 +86,13 @@
         </div>
     </div>
 
-<nav class="navbar navbar-expand-lg navbar-dark bg-primary p-2">
-  <div class="container-fluid d-flex justify-content-between align-items-center">
+<nav class="navbar navbar-expand-lg bg-primary mb-3 p-1" data-bs-theme="dark">
+        <div class="container-fluid">
 
     <!-- Brand -->
     <a class="navbar-brand d-flex align-items-center" href="/">
       <img src="https://homies-theta.vercel.app/logo.png" alt="Logo" height="40" class="me-2">
-      <span>AniHix</span>
+      <span><b>AniHix</b></span>
     </a>
 
     <!-- Navbar Links -->
@@ -106,25 +106,17 @@
     </div>
 
     <!-- Right Side (Search + Admin Buttons) -->
-    <div class="d-flex align-items-center">
-      <form class="d-flex me-2" role="search">
-        <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
-        <button class="btn btn-light" type="submit">Search</button>
-      </form>
-
-      <!-- Admin Buttons -->
-      <form action="/reload" method="get" class="me-2 admin-only">
-        <button type="submit" class="btn btn-light" name="chatId" value="<!-- Chat_id -->" title="Reload">
-          <i class="bi bi-arrow-clockwise"></i>
-        </button>
-      </form>
-
-      <form id="signoutForm" action="/logout" method="post">
-        <button type="submit" class="btn btn-danger btn-sm">
-          <i class="bi bi-box-arrow-left"></i> Logout
-        </button>
-      </form>
-    </div>
+            <div class="d-flex">
+                <form action="/reload" method="get" role="reload" class="admin-only ">
+                    <button type="submit" class="btn btn-primary me-2" name="chatId" value="<!-- Chat_id -->">
+                        <i class="bi bi-arrow-clockwise" ></i>
+                    </button>
+                </form>
+                <form id="signoutForm" action="/logout" method="post" class="d-flex" role="logout">
+                    <button type="submit" class="btn btn-secondary btn-sm"><i class="bi bi-box-arrow-left"></i>
+                        Logout</button>
+                </form>
+            </div>
 
   </div>
 </nav>
