@@ -14,7 +14,7 @@ class Telegram:
     BASE_URL = getenv("BASE_URL", "").rstrip('/')
     DATABASE_URL = getenv("DATABASE_URL", "")
     AUTH_CHANNEL = [channel.strip() for channel in getenv("AUTH_CHANNEL", "").split(",") if channel.strip()]
-    THEME = getenv("THEME", "quartz").lower()
+    THEME = getenv("THEME", "vapor").lower()
     USERNAME = getenv("USERNAME", "admin")
     PASSWORD = getenv("PASSWORD", "admin")
     ADMIN_USERNAME = getenv("ADMIN_USERNAME", "surfTG")
