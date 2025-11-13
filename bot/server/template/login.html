@@ -9,6 +9,8 @@
         type="image/x-icon">
     <title>AniHix: Login</title>
     <link rel="stylesheet" href="https://bootswatch.com/5/<!-- Theme -->/bootstrap.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
     <style>
         body {
             height: 100vh;
@@ -112,12 +114,12 @@
 
 
 
-      <!-- Popup Modal -->
+  <!-- Modal -->
   <div class="modal fade" id="infoModal" tabindex="-1" aria-labelledby="infoModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content text-center">
-        <div class="modal-header">
-          <h5 class="modal-title" id="infoModalLabel">Important Notice</h5>
+        <div class="modal-header border-0">
+          <h5 class="modal-title w-100" id="infoModalLabel">Important Notice</h5>
         </div>
         <div class="modal-body">
           <p>Please click the button below and wait 10–29 seconds. The login page will appear automatically.</p>
@@ -128,12 +130,11 @@
     </div>
   </div>
 
-
     
 
 </body>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script>
+  <!-- <script>
     window.onload = function () {
         var errorPopup = document.getElementById("errorPopup");
         var errorMessage = errorPopup.querySelector("strong").innerText.trim();
@@ -148,47 +149,105 @@
                 errorPopup.style.display = "none";
             }, 5000);
         }
-    };
+    };   -->
 
 
-          // === Popup logic ===
-      const lastShown = localStorage.getItem("popupLastShown");
-      const now = Date.now();
-      const twentyFourHours = 24 * 60 * 60 * 1000;
 
-      if (!lastShown || now - lastShown > twentyFourHours) {
-        const modal = new bootstrap.Modal(document.getElementById("infoModal"));
-        modal.show();
+     
+  <script>
+    (function() {
+      // Helper for debug (remove console.log in production)
+      const log = (...s) => { try { console.log('[login-popup]', ...s); } catch(e){} };
 
-        document.getElementById("startBtn").onclick = function () {
-          const delay = Math.floor(Math.random() * (29 - 10 + 1) + 10); // random 10-29 seconds
-          let timeLeft = delay;
-          const countdownEl = document.getElementById("countdown");
-          countdownEl.innerText = `Please wait ${timeLeft} seconds...`;
-          const interval = setInterval(() => {
-            timeLeft--;
-            countdownEl.innerText = `Please wait ${timeLeft} seconds...`;
-            if (timeLeft <= 0) {
-              clearInterval(interval);
-              modal.hide();
-              document.getElementById("loginContainer").style.display = "block";
-              localStorage.setItem("popupLastShown", Date.now());
-            }
-          }, 1000);
-        };
-      } else {
-        // Already shown in last 24 hours
+      // Error popup handling (keeps existing behavior)
+      window.addEventListener('load', function () {
+        try {
+          var errorPopup = document.getElementById("errorPopup");
+          var strong = errorPopup.querySelector("strong");
+          var errorMessage = strong ? strong.innerText.trim() : "";
+          if (errorMessage !== "Oh snap! Invalid username or password") {
+            errorPopup.style.display = "none";
+          } else {
+            setTimeout(() => errorPopup.style.display = "none", 5000);
+          }
+        } catch (e) {
+          log('errorPopup handling failed', e);
+        }
+      });
+
+      // Popup + 24h logic
+      function showLoginAfterDelay() {
         document.getElementById("loginContainer").style.display = "block";
       }
-    };
 
+      function initPopupFlow() {
+        try {
+          const lastShownRaw = localStorage.getItem('popupLastShown');
+          const lastShown = lastShownRaw ? parseInt(lastShownRaw, 10) : 0;
+          const now = Date.now();
+          const DAY = 24 * 60 * 60 * 1000;
 
+          // If shown within last 24 hours, skip popup and show login immediately
+          if (lastShown && (now - lastShown) < DAY) {
+            log('Popup shown within 24h — skipping. seconds left:', Math.round((DAY - (now - lastShown))/1000));
+            showLoginAfterDelay();
+            return;
+          }
 
+          // Ensure bootstrap exists
+          if (typeof bootstrap === 'undefined' || !bootstrap.Modal) {
+            log('Bootstrap Modal not available — showing login directly');
+            showLoginAfterDelay();
+            return;
+          }
 
+          const modalEl = document.getElementById('infoModal');
+          const modal = new bootstrap.Modal(modalEl, { backdrop: 'static', keyboard: false });
 
+          // Show the modal
+          modal.show();
+          log('Modal shown');
 
-    
-</script>
+          const startBtn = document.getElementById('startBtn');
+          const countdownEl = document.getElementById('countdown');
 
+          // Guard to avoid multiple clicks
+          let started = false;
+          startBtn.addEventListener('click', function () {
+            if (started) return;
+            started = true;
+            // random delay 10-29 seconds
+            const delaySec = Math.floor(Math.random() * (29 - 10 + 1)) + 10;
+            let t = delaySec;
+            countdownEl.innerText = `Please wait ${t} second(s)...`;
+
+            const iv = setInterval(() => {
+              t--;
+              if (t > 0) {
+                countdownEl.innerText = `Please wait ${t} second(s)...`;
+              } else {
+                clearInterval(iv);
+                modal.hide();
+                document.getElementById('loginContainer').style.display = 'block';
+                try { localStorage.setItem('popupLastShown', String(Date.now())); } catch(e){ log('localStorage set failed', e); }
+              }
+            }, 1000);
+          });
+
+        } catch (err) {
+          log('initPopupFlow failed', err);
+          // fallback: show login
+          showLoginAfterDelay();
+        }
+      }
+
+      // Run after DOM ready (use DOMContentLoaded to ensure elements exist)
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initPopupFlow);
+      } else {
+        initPopupFlow();
+      }
+    })();
+  </script>
 
 </html>
