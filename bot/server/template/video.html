@@ -4,13 +4,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" href="https://cdn.jsdelivr.net/gh/weebzone/weebzone/data/Surf-TG/src/ico2.png" type="image/x-icon">
-    <link rel="shortcut icon" href="https://cdn.jsdelivr.net/gh/weebzone/weebzone/data/Surf-TG/src/ico2.png"
+    <link rel="icon" href="https://homies-theta.vercel.app/logo.png" type="image/x-icon">
+    <link rel="shortcut icon" href="https://homies-theta.vercel.app/logo.png"
         type="image/x-icon">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
     <title>AniHix: <!-- Filename --> </title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/weebzone/weebzone/data/Surf-TG/css/plyr.css">
     <script src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@1"></script>
     <link rel="stylesheet" href="https://bootswatch.com/5/<!-- Theme -->/bootstrap.min.css">
     <script disable-devtool-auto src='https://cdn.jsdelivr.net/npm/disable-devtool'></script>
     <style>
@@ -104,7 +105,7 @@
         </div>
     </nav>
     <div class="video-player">
-        <video controls crossorigin playsinline data-poster="<!-- Poster -->" id="player">
+        <video controls crossorigin="anonymous" playsinline data-poster="<!-- Poster -->" id="player">
             <source src="#" type="video/mp4" />
         </video>
     </div>
@@ -119,7 +120,7 @@
         <div onclick="vlc_player()" class="btn btn-primary">VLC Mobile</div>
         <div onclick="km_player()" class="btn btn-primary">KM Player</div>
         <div onclick="get_file()" class="btn btn-primary">Get File</div>
-        <div onclick="copyUrl()" class="btn btn-primary">Copy Url</div>
+    <!--    <div onclick="copyUrl()" class="btn btn-primary">Copy Url</div>    -->
         <div onclick="download()" class="btn btn-primary">Download</div>
     </div>
     <footer class="footer mt-auto py-3 text-muted text-center" style="color: white;">
@@ -129,8 +130,8 @@
                     xmlns="http://www.w3.org/2000/svg">
                     <path fill-rule="evenodd"
                         d="M8 1.314C12.438-3.248 23.534 4.735 8 15-7.534 4.736 3.562-3.248 8 1.314z" />
-                </svg> by <a href="https://t.me/The_Last_Coder" target="_blank">Sasuke Uchiha</a><br>
-                &copy; 2024 <a href="https://tgstr-t6dq.onrender.com" target="_blank">AniHix</a>. All Rights
+                </svg> by <a href="https://t.me/Uchiha_Developer" target="_blank">Sasuke Uchiha</a><br>
+                &copy; 2025 <a href="https://Uchiha_Developer" target="_blank">AniHix</a>. All Rights
                 Reserved.
         </div>
     </footer>
@@ -147,23 +148,86 @@
 
     const downloadlink = `${domainUrl}/${videoId}/${encodedName}?id=${idParam}&hash=${hashParam}`;
 
-    const player = new Plyr('#player', {
-        controls: ['play', 'progress', 'current-time', 'mute', 'volume', 'fullscreen', 'pip', 'airplay', 'settings', "play-large", 'duration'],
-        hideControls: false,
+    const video = document.getElementById('player');
+
+    // Detect file type by extension
+    const isHLS = downloadlink.endsWith('.m3u8');
+    const isMP4 = downloadlink.endsWith('.mp4');
+
+    if (isHLS && Hls.isSupported()) {
+        // ✅ Use HLS.js for HLS streams
+        const hls = new Hls({
+            maxBufferLength: 60,
+            xhrSetup: function(xhr, url) {
+                xhr.withCredentials = false;
+            }
+        });
+        hls.loadSource(downloadlink);
+        hls.attachMedia(video);
+        hls.on(Hls.Events.ERROR, function (event, data) {
+            console.error("HLS error:", data);
+        });
+    } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+        // ✅ Native HLS support (iOS/Safari)
+        video.src = downloadlink;
+    } else if (isMP4) {
+        // ✅ MP4 file direct playback
+        video.src = downloadlink;
+        video.type = "video/mp4";
+    } else {
+        console.warn("Unknown video type. Attempting direct load...");
+        video.src = downloadlink;
+    }
+
+    // Initialize Plyr
+    const player = new Plyr(video, {
+        controls: [
+            'play-large', 'play', 'progress', 'current-time',
+            'mute', 'volume', 'settings', 'pip', 'airplay',
+            'fullscreen'
+        ],
+        settings: ['quality', 'speed', 'loop'],
+        ratio: '16:9',
+        clickToPlay: true,
         keyboard: { focused: true, global: true },
-        loop: { active: false },
     });
+
+    // Handle load errors gracefully
+    video.addEventListener('error', (e) => {
+        console.error("Video error:", e);
+        alert("This video could not be played. Try opening in external player.");
+    });
+});
+
+    
+    // Handle Downloading and other streaming options
+    
     function mx_player() {
         const openDownloadLink = downloadlink;
         const openMx = `intent:${openDownloadLink}#Intent;package=com.mxtech.videoplayer.ad;end`;
         window.location.href = openMx;
     }
 
-    function vlc_player() {
-        const openDownloadLink = downloadlink;
-        const openVlc = `vlc://${openDownloadLink}`;
-        window.location.href = openVlc;
-    }
+  //    function vlc_player() {
+    //      const openDownloadLink = downloadlink;
+     //     const openVlc = `vlc://${openDownloadLink}`;
+     //     window.location.href = openVlc;
+  //    }   
+
+    function vlc_player(downloadlink) {
+  if (!downloadlink) return;
+
+  // Clean up duplicated protocols like "http://https://"
+  let url = downloadlink.trim().replace(/^(https?:\/\/)+/i, 'https://');
+
+  // Ensure it has a protocol
+  if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
+
+  // Open in VLC
+  window.location.href = `vlc://${url}`;
+}
+
+    
     function km_player() {
         const openDownloadLink = downloadlink;
         const openKmplayer = `intent:${openDownloadLink}#Intent;package=com.kmplayer;end`;
