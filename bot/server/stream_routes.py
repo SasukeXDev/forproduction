@@ -376,65 +376,60 @@ class_cache = {}
 
 
 async def media_streamer(request: web.Request, chat_id: int, id: int, secure_hash: str):
-    range_header = request.headers.get("Range", None)
+    range_header = request.headers.get("Range")
 
     index = min(work_loads, key=work_loads.get)
     faster_client = multi_clients[index]
 
     if faster_client in class_cache:
-        tg_connect = class_cache[faster_client]
+        tg = class_cache[faster_client]
     else:
-        tg_connect = ByteStreamer(faster_client)
-        class_cache[faster_client] = tg_connect
+        tg = ByteStreamer(faster_client)
+        class_cache[faster_client] = tg
 
-    file_id = await tg_connect.get_file_properties(chat_id=chat_id, message_id=id)
+    file = await tg.get_file_properties(chat_id=chat_id, message_id=id)
 
-    if file_id.unique_id[:6] != secure_hash:
+    # Validate hash
+    if file.unique_id[:6] != secure_hash:
         raise InvalidHash
 
-    file_size = file_id.file_size
-    mime_type = file_id.mime_type or "video/mp4"
+    file_size = file.file_size
+    mime_type = file.mime_type or "video/mp4"
 
-    # Force MP4 for unknown types (Telegram often gives wrong type)
     if "video" not in mime_type:
         mime_type = "video/mp4"
 
+    # --- RANGE HANDLING ---
     if range_header:
-        from_bytes, until_bytes = range_header.replace("bytes=", "").split("-")
-        from_bytes = int(from_bytes or 0)
-        until_bytes = int(until_bytes) if until_bytes else file_size - 1
+        match = range_header.replace("bytes=", "").split("-")
+        start = int(match[0]) if match[0] else 0
+        end = int(match[1]) if match[1] else file_size - 1
     else:
-        from_bytes = 0
-        until_bytes = file_size - 1
+        start = 0
+        end = file_size - 1
 
-    if until_bytes >= file_size:
-        until_bytes = file_size - 1
+    if end >= file_size:
+        end = file_size - 1
 
-    content_length = until_bytes - from_bytes + 1
+    content_length = end - start + 1
 
-    chunk_size = 1024 * 1024
-    offset = from_bytes - (from_bytes % chunk_size)
-    first_cut = from_bytes - offset
-    last_cut = (until_bytes % chunk_size) + 1
-
-    part_count = math.ceil(until_bytes / chunk_size) - math.floor(offset / chunk_size)
-
-    body = tg_connect.yield_file(
-        file_id, index, offset, first_cut, last_cut, part_count, chunk_size
-    )
+    # --- DOWNLOAD THE EXACT BYTE RANGE ---
+    async def stream():
+        async for chunk in tg.stream_file(file, start, end):
+            yield chunk
 
     headers = {
         "Content-Type": mime_type,
-        "Content-Range": f"bytes {from_bytes}-{until_bytes}/{file_size}",
-        "Accept-Ranges": "bytes",
         "Content-Length": str(content_length),
-        "Access-Control-Allow-Origin": "*",   # <-- MUST HAVE
-        "Access-Control-Allow-Headers": "Range, Origin, Content-Type",
-        "Access-Control-Expose-Headers": "Content-Range, Content-Length",
+        "Content-Range": f"bytes {start}-{end}/{file_size}",
+        "Accept-Ranges": "bytes",
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Expose-Headers": "Content-Length, Content-Range",
+        "Cache-Control": "no-cache",
     }
 
     return web.Response(
         status=206 if range_header else 200,
-        body=body,
+        body=stream(),
         headers=headers
     )
