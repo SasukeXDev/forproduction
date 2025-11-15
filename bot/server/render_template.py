@@ -76,6 +76,15 @@ async def render_page(
             if not is_admin:
                 html += admin_block
 
+    elif route == "list":
+        async with aiopen(ospath.join(tpath, "list.html"), "r") as f:
+            html = (
+                (await f.read())
+                .replace("<!-- Theme -->", theme.lower())
+            )
+            if not is_admin:
+                html += admin_block
+
 
     elif route == "index":
         async with aiopen(ospath.join(tpath, "index.html"), "r") as f:
