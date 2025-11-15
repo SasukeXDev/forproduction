@@ -76,20 +76,6 @@ async def render_page(
             if not is_admin:
                 html += admin_block
 
-    elif route == "list":
-        async with aiopen(ospath.join(tpath, "list.html"), "r") as f:
-            html = (
-                (await f.read())
-                .replace("<!-- Print -->", html)
-                .replace("<!-- Theme -->", theme.lower())
-                .replace("<!-- Title -->", msg)
-                .replace("<!-- Database -->", database)
-            )
-
-    if not is_admin:
-        html += admin_block
-        if Telegram.HIDE_CHANNEL:
-            html += hide_channel
 
     elif route == "index":
         async with aiopen(ospath.join(tpath, "index.html"), "r") as f:
