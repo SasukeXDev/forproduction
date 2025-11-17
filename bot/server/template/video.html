@@ -107,14 +107,16 @@
     </nav>
 
     <!-- PlayerJS Player -->
-    <video
-        id="player"
-        class="video-js vjs-default-skin vjs-big-play-centered"
-        controls
-        preload="auto"
-        width="100%"
-        height="450"
-    ></video>
+    <div id="supportedPlayer">
+        <video
+            id="player"
+            class="video-js vjs-default-skin vjs-big-play-centered"
+            controls
+            preload="auto"
+            width="100%"
+            height="450"
+        ></video>
+    </div>
 
     <div class="card bg-light mb-3" style="margin: auto; border-radius: 5px;">
         <div class="card-body">
@@ -123,7 +125,9 @@
         </div>
     </div>
 
-    <div class="container d-flex justify-content-center align-items-center" style="width: 100%; padding: 0 5px;">
+    <div id="unsupportedPlayer" style="display:none; padding:20px;">
+    <h5>This video format is not supported by your browser.</h5>
+    <p>Please open it in an external player:</p>
         <div onclick="mx_player()" class="btn btn-primary">MX Player</div>
         <div onclick="vlc_player()" class="btn btn-primary">VLC Mobile</div>
         <div onclick="km_player()" class="btn btn-primary">KM Player</div>
@@ -165,17 +169,47 @@
     const downloadlink1 = `${rawDomain}/${videoId}/${encodedName}?id=${idParam}&hash=${hashParam}`;
 
 
-    // ⭐ Initialize PlayerJS
-    function initPlayer() {
+    // ========== Supported Formats (Browser Supported) ==========
+    const supportedExtensions = ["mp4", "m3u8", "webm"];
+    const ext = filename.split('.').pop().toLowerCase();
+
+    // ========== Initialize Player or External Buttons ==========
+    function initAutoPlayer() {
+        console.log("Detected file ext:", ext);
+
+        if (supportedExtensions.includes(ext)) {
+            console.log("Playable format → using Video.js");
+            initVideoJS();
+        } else {
+            console.log("Unsupported format → external player only");
+            useExternalPlayers();
+        }
+    }
+
+    // ========== Setup Video.js for supported formats ==========
+    function initVideoJS() {
+        document.getElementById("supportedPlayer").style.display = "block";
+        document.getElementById("unsupportedPlayer").style.display = "none";
+
         var player = videojs('player');
+
+        let mime = "video/mp4";
+        if (ext === "m3u8") mime = "application/x-mpegURL";
+        if (ext === "webm") mime = "video/webm";
+
         player.src({
             src: downloadlink,
-            type: "video/mp4"
+            type: mime
         });
     }
 
-    window.onload = initPlayer;
+    // ========== Show External Players if not supported ==========
+    function useExternalPlayers() {
+        document.getElementById("supportedPlayer").style.display = "none";
+        document.getElementById("unsupportedPlayer").style.display = "block";
+    }
 
+    // ========== External player intents ==========
 
     // External players
     function mx_player() {
