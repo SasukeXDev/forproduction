@@ -11,6 +11,16 @@
     <link rel="stylesheet" href="https://bootswatch.com/5/<!-- Theme -->/bootstrap.min.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/video.js/8.3.0/video-js.min.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/video.js/8.3.0/video.min.js"></script>
+    <!-- Video.js Ads Plugin -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/videojs-contrib-ads/6.9.0/videojs-contrib-ads.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/videojs-contrib-ads/6.9.0/videojs-contrib-ads.css">
+
+<!-- Google IMA SDK -->
+    <script src="https://imasdk.googleapis.com/js/sdkloader/ima3.js"></script>
+
+<!-- VideoJS + IMA -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/videojs-ima/1.14.0/videojs.ima.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/videojs-ima/1.14.0/videojs.ima.css">
 
 
 
@@ -107,16 +117,14 @@
     </nav>
 
     <!-- PlayerJS Player -->
-    <div id="supportedPlayer">
         <video
             id="player"
             class="video-js vjs-default-skin vjs-big-play-centered"
             controls
             preload="auto"
-            width="100%"
+            width="75%"
             height="450"
         ></video>
-    </div>
 
     <div class="card bg-light mb-3" style="margin: auto; border-radius: 5px;">
         <div class="card-body">
@@ -125,9 +133,15 @@
         </div>
     </div>
 
-    <div id="unsupportedPlayer" style="display:none; padding:20px;">
-    <h5>This video format is not supported by your browser.</h5>
-    <p>Please open it in an external player:</p>
+    <div class="alert alert-warning d-flex flex-column gap-2" role="alert" style="border-radius: 10px;">
+        <h5 class="alert-heading">
+            ⚠️ Unsupported Video Format
+        </h5>
+        <p>
+            This video cannot be played in your browser.  
+            Please open it in an external media player:
+        </p></div>
+    <div class="container d-flex justify-content-center align-items-center" style="width: 100%; padding: 0 5px;">
         <div onclick="mx_player()" class="btn btn-primary">MX Player</div>
         <div onclick="vlc_player()" class="btn btn-primary">VLC Mobile</div>
         <div onclick="km_player()" class="btn btn-primary">KM Player</div>
@@ -169,47 +183,35 @@
     const downloadlink1 = `${rawDomain}/${videoId}/${encodedName}?id=${idParam}&hash=${hashParam}`;
 
 
-    // ========== Supported Formats (Browser Supported) ==========
-    const supportedExtensions = ["mp4", "m3u8", "webm"];
-    const ext = filename.split('.').pop().toLowerCase();
-
-    // ========== Initialize Player or External Buttons ==========
-    function initAutoPlayer() {
-        console.log("Detected file ext:", ext);
-
-        if (supportedExtensions.includes(ext)) {
-            console.log("Playable format → using Video.js");
-            initVideoJS();
-        } else {
-            console.log("Unsupported format → external player only");
-            useExternalPlayers();
-        }
-    }
-
-    // ========== Setup Video.js for supported formats ==========
-    function initVideoJS() {
-        document.getElementById("supportedPlayer").style.display = "block";
-        document.getElementById("unsupportedPlayer").style.display = "none";
-
+    function initPlayer() {
         var player = videojs('player');
+           player.src({
+                src: downloadlink,
+                type: "video/mp4"
+            });
+            // Initialize ads
+    player.ima({
+        adTagUrl: ""
+    });
 
-        let mime = "video/mp4";
-        if (ext === "m3u8") mime = "application/x-mpegURL";
-        if (ext === "webm") mime = "video/webm";
+    // Show midroll at 50%
+    let midrollShown = false;
 
-        player.src({
-            src: downloadlink,
-            type: mime
-        });
-    }
+    player.on("timeupdate", function () {
+        const current = player.currentTime();
+        const duration = player.duration();
 
-    // ========== Show External Players if not supported ==========
-    function useExternalPlayers() {
-        document.getElementById("supportedPlayer").style.display = "none";
-        document.getElementById("unsupportedPlayer").style.display = "block";
-    }
+        if (!midrollShown && current > duration * 0.5) {
+            midrollShown = true;
+            console.log("🔶 Playing Mid-Roll Ad...");
 
-    // ========== External player intents ==========
+            player.ima.requestAds();      // Request & load ad
+            player.ima.playAdBreak();     // Play it instantly
+        }
+    });
+}
+    
+        window.onload = initPlayer;
 
     // External players
     function mx_player() {
