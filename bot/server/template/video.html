@@ -9,28 +9,16 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
     <title>AniHix: <!-- Filename --> </title>
     <link rel="stylesheet" href="https://bootswatch.com/5/<!-- Theme -->/bootstrap.min.css">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/video.js/8.3.0/video-js.min.css" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/video.js/8.3.0/video.min.js"></script>
-    <!-- Video.js Ads Plugin -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/videojs-contrib-ads/6.9.0/videojs-contrib-ads.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/videojs-contrib-ads/6.9.0/videojs-contrib-ads.css">
-
-<!-- Google IMA SDK -->
-    <script src="https://imasdk.googleapis.com/js/sdkloader/ima3.js"></script>
-
-<!-- VideoJS + IMA -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/videojs-ima/1.14.0/videojs.ima.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/videojs-ima/1.14.0/videojs.ima.css">
-
-
-
-
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/weebzone/weebzone/data/Surf-TG/css/plyr.css">
+    <script src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.js"></script>
+    <script disable-devtool-auto src='https://cdn.jsdelivr.net/npm/disable-devtool'></script>
     <style>
         body {
             height: 100vh;
             margin: 0;
             justify-content: center;
             align-items: center;
+
         }
 
         .container {
@@ -60,10 +48,8 @@
             padding-bottom: 10px;
         }
 
-        #player {
+        .plyr {
             border-radius: 5px;
-            width: 100%;
-            height: 450px;
         }
 
         ::-webkit-scrollbar {
@@ -79,22 +65,22 @@
         }
 
         @media (max-width: 992px) {
+
             .video-player {
                 max-width: 80%;
                 margin: auto;
             }
 
             .card {
+                align-items: left;
+                box-shadow: none;
+                border-radius: 0%;
                 max-width: 80%
             }
 
             .navbar {
                 padding-right: 15px;
                 padding-left: 15px;
-            }
-
-            #player {
-                height: 320px;
             }
         }
     </style>
@@ -117,30 +103,20 @@
     </nav>
 
     <!-- PlayerJS Player -->
-        <video
-            id="player"
-            class="video-js vjs-default-skin vjs-big-play-centered"
-            controls
-            preload="auto"
-            width="75%"
-            height="450"
-        ></video>
-
+    <div class="video-player">
+        <video controls crossorigin playsinline data-poster="<!-- Poster -->" id="player">
+            <source src="#" type="video/mp4" />
+        </video>
+    </div>
     <div class="card bg-light mb-3" style="margin: auto; border-radius: 5px;">
         <div class="card-body">
-            <h6 id="videoname" class="card-title">Name: <!-- Filename --></h6>
+            <h6 class="card-title">Name: <!-- Filename --></h6>
             <p class="card-text">Size: <!-- Size --></p>
         </div>
     </div>
-
     <div class="alert alert-warning d-flex flex-column gap-2" role="alert" style="border-radius: 10px;">
-        <h5 class="alert-heading">
-            ⚠️ Unsupported Video Format
-        </h5>
-        <p>
-            This video cannot be played in your browser.  
-            Please open it in an external media player:
-        </p></div>
+        <h5 class="alert-heading">⚠️ Unsupported Video Format</h5>
+        <p>This video cannot be played in your browser. Please open it in an external media player:</p></div>
     <div class="container d-flex justify-content-center align-items-center" style="width: 100%; padding: 0 5px;">
         <div onclick="mx_player()" class="btn btn-primary">MX Player</div>
         <div onclick="vlc_player()" class="btn btn-primary">VLC Mobile</div>
@@ -164,54 +140,23 @@
     const videolink = window.location.href;
     const url = new URL(videolink);
     const domainUrl = url.origin;
-
     const videoIdWithParams = videolink.split('/').pop();
     const videoId = videoIdWithParams.split('?')[0];
-
     const idParam = new URLSearchParams(window.location.search).get('id');
     const hashParam = new URLSearchParams(window.location.search).get('hash');
-
- //   const encodedName = encodeURIComponent('<!-- Filename -->');
-
-
-        // Get filename from HTML instead of using <!-- Filename -->
-    const filename = document.getElementById("videoname").textContent.replace("Name:", "").trim();
-    const encodedName = encodeURIComponent(filename);
+    const encodedName = encodeURIComponent('<!-- Filename -->');
 
     const downloadlink = `${domainUrl}/${videoId}/${encodedName}?id=${idParam}&hash=${hashParam}`;
     const rawDomain = domainUrl.replace(/^https?:\/\//, "");
     const downloadlink1 = `${rawDomain}/${videoId}/${encodedName}?id=${idParam}&hash=${hashParam}`;
 
 
-    function initPlayer() {
-        var player = videojs('player');
-           player.src({
-                src: downloadlink,
-                type: "video/mp4"
-            });
-            // Initialize ads
-    player.ima({
-        adTagUrl: ""
+    const player = new Plyr('#player', {
+        controls: ['play', 'progress', 'current-time', 'mute', 'volume', 'fullscreen', 'pip', 'airplay', 'settings', "play-large", 'duration'],
+        hideControls: false,
+        keyboard: { focused: true, global: true },
+        loop: { active: false },
     });
-
-    // Show midroll at 50%
-    let midrollShown = false;
-
-    player.on("timeupdate", function () {
-        const current = player.currentTime();
-        const duration = player.duration();
-
-        if (!midrollShown && current > duration * 0.5) {
-            midrollShown = true;
-            console.log("🔶 Playing Mid-Roll Ad...");
-
-            player.ima.requestAds();      // Request & load ad
-            player.ima.playAdBreak();     // Play it instantly
-        }
-    });
-}
-    
-        window.onload = initPlayer;
 
     // External players
     function mx_player() {
@@ -240,7 +185,24 @@
             window.location.href = openTG;
         }
     }
-</script>
 
-            </html>
-    
+    function copyUrl() {
+        const url = downloadlink;
+        navigator.clipboard.writeText(url)
+            .then(() => {
+                alert('URL copied to clipboard!');
+            })
+            .catch((error) => {
+                console.error('Failed to copy URL: ', error);
+            });
+    }
+    function updateVideoSource() {
+        const videoElement = document.getElementById('player');
+        const newSrc = downloadlink;
+        videoElement.src = newSrc;
+    }
+    window.onload = function () {
+        updateVideoSource();
+    };
+</script>
+</html>
