@@ -48,7 +48,7 @@ async def get_files(chat_id, page=1):
         file = post.video or post.document
         if not file:
             continue
-        title = file.file_name or post.caption or file.file_id
+        title = post.caption
         title, _ = splitext(title)
         title = re.sub(r'[.,|_\',]', ' ', title)
         posts.append({"msg_id": post.id, "title": title,
@@ -77,4 +77,4 @@ async def posts_file(posts, chat_id):
                 
             </div>
 """
-    return ''.join(phtml.format(chat_id=str(chat_id).replace("-100", ""), id=post["msg_id"], img=f"/api/thumb/{chat_id}?id={post['msg_id']}", title=post["caption"] if "caption" in post and post["caption"] else post["name"], hash=post["hash"], size=post['size'], type=post['type']) for post in posts)
+    return ''.join(phtml.format(chat_id=str(chat_id).replace("-100", ""), id=post["msg_id"], img=f"/api/thumb/{chat_id}?id={post['msg_id']}", title=post["name"], hash=post["hash"], size=post['size'], type=post['type']) for post in posts)
