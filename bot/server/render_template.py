@@ -120,7 +120,7 @@ async def render_page(
                 poster = f"/api/thumb/{chat_id}?id={id}"
                 html = (
                     (await r.read())
-                    .replace("<!-- Title -->", caption)
+                    .replace("<!-- Title -->", filename)
                     .replace("<!-- Filename -->", filename)
                     .replace("<!-- Theme -->", theme.lower())
                     .replace("<!-- Poster -->", poster)
