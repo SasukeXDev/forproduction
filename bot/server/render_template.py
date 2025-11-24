@@ -118,9 +118,10 @@ async def render_page(
         if tag == "video":
             async with aiopen(ospath.join(tpath, "video.html")) as r:
                 poster = f"/api/thumb/{chat_id}?id={id}"
+                title : "title"
                 html = (
                     (await r.read())
-                    .replace("<!-- Title -->", filename)
+                    .replace("<!-- Title -->", title)
                     .replace("<!-- Filename -->", filename)
                     .replace("<!-- Theme -->", theme.lower())
                     .replace("<!-- Poster -->", poster)
