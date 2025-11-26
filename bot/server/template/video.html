@@ -110,13 +110,23 @@
     </div>
     <div class="card bg-light mb-3" style="margin: auto; border-radius: 5px;">
         <div class="card-body">
-            <h6 class="card-title">Name: <!-- Title --></h6>
-            <p class="card-text">Size: <!-- Size --></p>
+            <h6 class="card-title mb-2" style="font-weight: 600;">🎬 Name: <!-- Title --></h6>
+            <p class="card-text mb-1">🌐 <strong>Language:</strong> Multi-Language (Hindi + Others)</p>
+            <p class="card-text mb-1">📺 <strong>Quality:</strong> 720p / 480p</p>
+            <p class="card-text mb-1">⏱️ <strong>Duration:</strong> <!-- Duration --></p>
+            <p class="card-text mb-1">💾 <strong>Size:</strong> <!-- Size --></p>
+            <p class="card-text mb-0">📁 <strong>Format:</strong> <!-- Tag --></p>
         </div>
     </div>
-    <div class="alert alert-warning d-flex flex-column gap-1" role="alert" style="border-radius: 8px;">
-        <h6 class="alert-heading">⚠️ Unsupported Video Format</h6>
-        <p>If video shows black screen or cannot be played in your browser. Please open it in an external media player:</p></div>
+<div class="alert alert-warning" role="alert" style="border-radius: 8px; padding:10px;">
+  <strong>⚠️ Unsupported Video</strong><br>
+  <small>If the video shows a black screen or doesn’t play, try an external media player.</small>
+
+  <div class="mt-2">
+      <button class="btn btn-sm btn-danger" onclick="reportIssue()">Report Issue</button>
+  </div>
+</div>
+
     <div class="container d-flex justify-content-center align-items-center" style="width: 100%; padding: 0 5px;">
         <div onclick="mx_player()" class="btn btn-primary">MX Player</div>
         <div onclick="vlc_player()" class="btn btn-primary">VLC Mobile</div>
