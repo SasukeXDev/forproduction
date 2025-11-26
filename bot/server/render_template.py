@@ -6,6 +6,7 @@ from bot import LOGGER
 from bot.config import Telegram
 from bot.helper.database import Database
 from bot.helper.exceptions import InvalidHash
+from bot.helper.index import title
 from bot.helper.file_size import get_readable_file_size
 from bot.server.file_properties import get_file_ids
 from bot.telegram import StreamBot
@@ -118,9 +119,10 @@ async def render_page(
         if tag == "video":
             async with aiopen(ospath.join(tpath, "video.html")) as r:
                 poster = f"/api/thumb/{chat_id}?id={id}"
+                caption=post["title"]
                 html = (
                     (await r.read())
-                    .replace("<!-- Title -->", title)
+                    .replace("<!-- Title -->", caption)
                     .replace("<!-- Filename -->", filename)
                     .replace("<!-- Theme -->", theme.lower())
                     .replace("<!-- Poster -->", poster)
