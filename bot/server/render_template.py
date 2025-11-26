@@ -79,13 +79,9 @@ async def render_page(
 
     elif route == "list":
         async with aiopen(ospath.join(tpath, "list.html"), "r") as f:
-            html = (
-                (await f.read())
-                .replace("<!-- Theme -->", theme.lower())
-            )
+            html = (await f.read()).replace("<!-- Theme -->", theme.lower())
             if not is_admin:
                 html += admin_block
-
 
     elif route == "index":
         async with aiopen(ospath.join(tpath, "index.html"), "r") as f:
@@ -117,11 +113,11 @@ async def render_page(
             filename = "Proper Filename is Missing"
         filename = re.sub(r"[,|_\',]", " ", filename)
         if tag == "video":
-          
-          message = await StreamBot.get_messages(chat_id, int(id))
-          raw_caption = message.caption or message.video.file_name or ""
-          caption = extract_title(raw_caption)
-          
+
+            message = await StreamBot.get_messages(chat_id, int(id))
+            raw_caption = message.caption or message.video.file_name or ""
+            caption = extract_title(raw_caption)
+
             async with aiopen(ospath.join(tpath, "video.html")) as r:
                 poster = f"/api/thumb/{chat_id}?id={id}"
                 html = (
