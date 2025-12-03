@@ -65,23 +65,22 @@
     padding: 6px !important;
 }
 
-/* Fixed height card */
 .uniform-card {
-    height: 330px; /* You can adjust */
+    height: 330px;           /* Keep card height fixed */
     display: flex;
     flex-direction: column;
     overflow: hidden;
 }
 
-/* Fixed height image */
 .uniform-card img {
-    height: 170px;
-    object-fit: cover;
+    width: 100%;             /* Full card width */
+    height: auto;            /* Keep original image ratio */
+    object-fit: contain;     /* Show full image without cropping */
 }
 
-/* Lock title height (2 lines max) */
+/* Title: allow 3-4 lines */
 .card-title {
-    height: 40px;           
+    height: 72px;           /* 3 lines approx, adjust if needed */
     overflow: hidden;
     text-overflow: ellipsis;
     line-height: 1.2;
@@ -92,9 +91,16 @@
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+    flex-grow: 1;
 }
 
-/* Optional hover */
+.badges-bottom {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 5px;
+}
+
+/* Optional hover effect */
 .uniform-card:hover {
     transform: scale(1.03);
     transition: 0.2s;
