@@ -58,6 +58,49 @@
     .col:hover {
         transform: scale(1.05);
     }
+
+    /* Floating Back-to-Top Button */
+.back-to-top {
+  position: fixed;
+  bottom: 20px;
+  right: 18px;
+  background: #0d6efd;
+  color: white;
+  border: none;
+  padding: 10px 14px;
+  border-radius: 50%;
+  font-size: 22px;
+  cursor: pointer;
+  display: none;
+  z-index: 9999;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+.back-to-top:hover {
+  background: #084fc7;
+  transform: scale(1.1);
+}
+
+/* Navbar hover effects */
+.navbar-nav .nav-link {
+  font-weight: 500;
+  transition: 0.2s;
+}
+
+.navbar-nav .nav-link:hover {
+  opacity: 0.8;
+}
+
+.navbar-brand {
+  font-size: 1.3rem;
+}
+    
+.footer {
+    position: absolute;
+    bottom: 0;
+}
+    
 </style>
 
 <body>
@@ -126,12 +169,41 @@
         </div>
     </div>
 
-    <nav class="navbar navbar-expand-lg bg-primary mb-3 p-1" data-bs-theme="dark">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm sticky-top">
         <div class="container-fluid">
             <a class="navbar-brand" href="/">
                 <img src="https://homies-theta.vercel.app/logo.png" alt="Logo"
                     height="40">
             </a>
+
+            
+                <!-- Mobile Toggle -->
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar">
+              <span class="navbar-toggler-icon"></span>
+            </button>
+
+        <!-- Navbar Links -->
+    <div class="collapse navbar-collapse" id="mainNavbar">
+      <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+
+        <li class="nav-item">
+          <a class="nav-link active" href="/">🏠 Home</a>
+        </li>
+
+        <li class="nav-item">
+          <a class="nav-link" href="/index">📂 Categories</a>
+        </li>
+
+        <li class="nav-item">
+          <a class="nav-link" href="https://t.me/Anihix_Offical" target="_blank">💬 Community</a>
+        </li>
+
+      </ul>
+    </div>
+
+
+
+            
             <div class="d-flex">
                 <button type="button" class="admin-only btn btn-primary me-1 btn-sm" data-bs-toggle="modal"
                     data-bs-target="#editConfigModal"><i
@@ -183,6 +255,26 @@
             </p>
         </div>
     </footer>
+    <button id="backToTopBtn" class="back-to-top">
+  ↑
+</button>
+
+<script>
+  const backBtn = document.getElementById("backToTopBtn");
+
+  window.addEventListener("scroll", () => {
+    if (window.scrollY > 300) {
+      backBtn.style.display = "block";
+    } else {
+      backBtn.style.display = "none";
+    }
+  });
+
+  backBtn.addEventListener("click", () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  });
+</script>
+
 </body>
 <script>
     function setDefaultChannelValue() {
