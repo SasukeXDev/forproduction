@@ -51,6 +51,7 @@ async def get_files(chat_id, page=1):
         title = post.caption
         title, _ = splitext(title)
         title = re.sub(r'[.,|_\',]', ' ', title)
+        poster_url = fetch_poster(title)
         posts.append({"msg_id": post.id, "title": title,
                     "hash": file.file_unique_id[:6], "size": get_readable_file_size(file.file_size), "type": file.mime_type})
     save_cache(chat_id, {"posts": posts}, page)
@@ -80,4 +81,4 @@ async def posts_file(posts, chat_id):
             </div>
 """
 
-    return ''.join(phtml.format(chat_id=str(chat_id).replace("-100", ""), id=post["msg_id"], img=f"/api/thumb/{chat_id}?id={post['msg_id']}", title=post["title"], hash=post["hash"], size=post['size'], type=post['type']) for post in posts)
+    return ''.join(phtml.format(chat_id=str(chat_id).replace("-100", ""), id=post["msg_id"], img=post["poster_url"], title=post["title"], hash=post["hash"], size=post['size'], type=post['type']) for post in posts)
