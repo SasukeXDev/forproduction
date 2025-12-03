@@ -66,7 +66,8 @@ async def posts_file(posts, chat_id):
                             onchange="checkSendButton()" id="selectCheckbox"
                             data-id="{id}|{hash}|{title}|{size}|{type}|{img}">
                         <img src="https://cdn.jsdelivr.net/gh/weebzone/weebzone/data/Surf-TG/src/loading.gif" class="lzy_img card-img-top rounded-top"
-                            data-src="{img}" alt="{title}">
+                            data-src="{img}" alt="{title}"
+                            onerror="this.onerror=null;this.src='https://cdn-icons-png.flaticon.com/512/565/565547.png';">
                         <a href="/watch/{chat_id}?id={id}&hash={hash}">
                         <div class="card-body p-1">
                             <h6 class="card-title">{title}</h6>
