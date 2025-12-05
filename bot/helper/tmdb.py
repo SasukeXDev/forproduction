@@ -6,94 +6,151 @@ tmdb = TMDb()
 tmdb.api_key = "68be78e728be4e86e934df1591d26c5b"
 tmdb.language = 'en'
 
+movie_api = Movie()
+tv_api = TV()
 
-def parse_title_info(raw_title: str):
-    """
-    Extract clean title, year, and type (movie/tv) from filename/title.
-    Example:
-      "Animal (2023) (Movie)" → ("Animal", 2023, "movie")
-    """
-    title = raw_title
 
+def extract_title_info(title: str):
+    """
+    Extract cleaned_title, year, season_number, and media type (movie/tv)
+    """
     # Extract year
-    year_match = re.search(r"(19|20)\d{2}", title)
+    year_match = re.search(r"\b(19|20)\d{2}\b", title)
     year = int(year_match.group()) if year_match else None
 
-    # Detect movie / tv
-    type_match = re.search(r"(movie|film|tv|series|season|episode)", title, re.I)
-    mtype = type_match.group().lower() if type_match else None
-    if mtype in ["film", "movie"]:
+    # Extract season number
+    season_match = re.search(r"[Ss]eason\s?(\d+)", title) or re.search(r"[Ss](\d+)", title)
+    season_number = int(season_match.group(1)) if season_match else None
+
+    # Detect explicit type
+    mtype = None
+    if "(movie)" in title.lower():
         mtype = "movie"
-    elif mtype in ["tv", "series", "season", "episode"]:
+    elif "(tv)" in title.lower() or "(series)" in title.lower() or "(show)" in title.lower():
         mtype = "tv"
 
     # Clean title
-    title = re.sub(r'\(.*?\)|\[.*?\]', '', title)  # remove (…)
-    title = re.sub(r'\d{3,4}p|x264|x265|HEVC|HDRip|WEB-DL|Dual Audio|Hindi|English|ORG', '', title, flags=re.I)
-    title = re.sub(r'[^a-zA-Z0-9\s]', ' ', title)
-    title = re.sub(r'\s+', ' ', title).strip()
+    cleaned = re.sub(r"\(.*?\)", "", title)     # remove () blocks
+    cleaned = re.sub(r"[Ss]eason\s?\d+", "", cleaned)  # remove season text
+    cleaned = re.sub(r"[Ss]\d+", "", cleaned)          # remove S01
+    cleaned = cleaned.strip()
 
-    return title, year, mtype
+    return cleaned, year, season_number, mtype
 
 
-def best_result(items):
+def get_best_match(results, title, year=None):
     """
-    Select best match based on:
-    - vote_count (more popular = more accurate)
-    - vote_average (backup)
+    Select best match using:
+    - exact title similarity
+    - year match
+    - popularity score
     """
-    if not items:
+    if not results:
         return None
-    return sorted(items, key=lambda x: (x.vote_count, x.vote_average), reverse=True)[0]
+
+    title = title.lower()
+    best = None
+    best_score = -999
+
+    for r in results:
+        score = 0
+
+        # Title similarity bonus
+        if r.title and title in r.title.lower():
+            score += 50
+
+        if r.name and title in r.name.lower():
+            score += 50
+
+        # Year match bonus (if year exists)
+        if year and hasattr(r, "release_date") and r.release_date:
+            if str(year) in r.release_date:
+                score += 40
+
+        if year and hasattr(r, "first_air_date") and r.first_air_date:
+            if str(year) in r.first_air_date:
+                score += 40
+
+        # Popularity score
+        if hasattr(r, "popularity"):
+            score += r.popularity
+
+        if score > best_score:
+            best_score = score
+            best = r
+
+    return best
+
+
+def fetch_tmdb_season_poster(tv_id, season_number):
+    """
+    Fetch poster for specific TV season
+    """
+    try:
+        season = tv_api.season(tv_id, season_number)
+        if season and season.poster_path:
+            return f"https://image.tmdb.org/t/p/w500{season.poster_path}"
+    except:
+        pass
+    return None
 
 
 def fetch_poster(title: str) -> str:
-    """
-    Fetch the most accurate poster using title + year + type.
-    """
-    clean_title, year, mtype = parse_title_info(title)
-    movie = Movie()
-    tv = TV()
+    cleaned_title, year, season_number, forced_type = extract_title_info(title)
 
-    try:
-        results = []
+    # -------------------------
+    # If type is forced as movie
+    # -------------------------
+    if forced_type == "movie":
+        movies = movie_api.search(cleaned_title)
+        match = get_best_match(movies, cleaned_title, year)
+        if match and match.poster_path:
+            return f"https://image.tmdb.org/t/p/w500{match.poster_path}"
 
-        # SEARCH PRIORITY 1: exact match with year
-        if year:
-            if mtype in [None, "movie"]:
-                results = movie.search(clean_title)
-                results = [r for r in results if r.release_date and str(year) in r.release_date]
+    # -------------------------
+    # If type is forced as TV
+    # -------------------------
+    if forced_type == "tv":
+        shows = tv_api.search(cleaned_title)
+        match = get_best_match(shows, cleaned_title, year)
 
-            if mtype == "tv":
-                results = tv.search(clean_title)
-                results = [r for r in results if r.first_air_date and str(year) in r.first_air_date]
+        if match:
+            # If season requested, fetch season poster
+            if season_number:
+                season_poster = fetch_tmdb_season_poster(match.id, season_number)
+                if season_poster:
+                    return season_poster
 
-            if results:
-                best = best_result(results)
-                if best and best.poster_path:
-                    return f"https://image.tmdb.org/t/p/w500{best.poster_path}"
+            # Otherwise default TV poster
+            if match.poster_path:
+                return f"https://image.tmdb.org/t/p/w500{match.poster_path}"
 
-        # SEARCH PRIORITY 2: title only (wider match)
-        if mtype in [None, "movie"]:
-            results = movie.search(clean_title)
-        elif mtype == "tv":
-            results = tv.search(clean_title)
+    # -------------------------
+    # Auto detect: try movie first
+    # -------------------------
+    movies = movie_api.search(cleaned_title)
+    best_movie = get_best_match(movies, cleaned_title, year)
+    if best_movie and best_movie.poster_path:
+        return f"https://image.tmdb.org/t/p/w500{best_movie.poster_path}"
 
-        if results:
-            best = best_result(results)
-            if best and best.poster_path:
-                return f"https://image.tmdb.org/t/p/w500{best.poster_path}"
+    # -------------------------
+    # Auto detect: try TV
+    # -------------------------
+    shows = tv_api.search(cleaned_title)
+    best_show = get_best_match(shows, cleaned_title, year)
 
-        # Fallback: try both if type unknown
-        if not mtype:
-            results = movie.search(clean_title) + tv.search(clean_title)
-            best = best_result(results)
-            if best and best.poster_path:
-                return f"https://image.tmdb.org/t/p/w500{best.poster_path}"
+    if best_show:
+        # If season exists → return season poster
+        if season_number:
+            season_poster = fetch_tmdb_season_poster(best_show.id, season_number)
+            if season_poster:
+                return season_poster
 
-    except Exception as e:
-        pass
+        if best_show.poster_path:
+            return f"https://image.tmdb.org/t/p/w500{best_show.poster_path}"
 
-    # FINAL fallback
+    # -------------------------
+    # Final fallback
+    # -------------------------
     return "https://cdn-icons-png.flaticon.com/512/565/565547.png"
 
