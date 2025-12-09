@@ -60,54 +60,66 @@
         transform: scale(1.05);
     }
 
+    /* Navbar hover effects */
+    .navbar-nav .nav-link {
+      font-weight: 450;
+      transition: 0.2s;
+    }
+
+    .navbar-nav .nav-link:hover {
+      opacity: 0.8;
+    }
+
+    .navbar-brand {
+      font-size: 1.2rem;
+    }
+
     /* Uniform card margin */
-.card-wrapper {
-    padding: 6px !important;
-}
+    .card-wrapper {
+        padding: 6px !important;
+    }
 
-.uniform-card {
-    height: 330px;           /* Keep card height fixed */
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-}
+    .uniform-card {
+        height: 330px;           /* Keep card height fixed */
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
 
-.uniform-card img {
-    width: 100%;             /* Full card width */
-    height: auto;            /* Keep original image ratio */
-    object-fit: contain;     /* Show full image without cropping */
-}
+    .uniform-card img {
+        width: 100%;             /* Full card width */
+        height: auto;            /* Keep original image ratio */
+        object-fit: contain;     /* Show full image without cropping */
+    }
 
-/* Title: allow 3-4 lines */
-.card-title {
-    height: 72px;           /* 3 lines approx, adjust if needed */
-    overflow: hidden;
-    text-overflow: ellipsis;
-    line-height: 1.2;
-}
+    /* Title: allow 3-4 lines */
+    .card-title {
+        height: 72px;           /* 3 lines approx, adjust if needed */
+        overflow: hidden;
+        text-overflow: ellipsis;
+        line-height: 1.2;
+    }
 
-/* Push badges to bottom */
-.card-body {
+    /* Push badges to bottom */
+    .card-body {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
     flex-grow: 1;
-}
+    }
 
-.badges-bottom {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 5px;
-}
+    .badges-bottom {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 5px;
+    }
 
-/* Optional hover effect */
-.uniform-card:hover {
-    transform: scale(1.03);
-    transition: 0.2s;
-}
-
-
-    
+    /* Optional hover effect */
+    .uniform-card:hover {
+        transform: scale(1.03);
+        transition: 0.2s;
+    }
+ 
 </style>
 
 <body>
@@ -141,6 +153,35 @@
                 <img src="https://homies-theta.vercel.app/logo.png" alt="Logo"
                     height="40">
             </a>
+
+
+        <!-- Mobile Toggle -->
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar">
+              <span class="navbar-toggler-icon"></span>
+            </button>
+
+        <!-- Navbar Links -->
+    <div class="collapse navbar-collapse" id="mainNavbar">
+      <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+
+        <li class="nav-item">
+          <a class="nav-link active" href="/"> Home</a>
+        </li>
+
+        <li class="nav-item">
+          <a class="nav-link" href="/channel/3425378735"> NetFlix</a>
+        </li>
+
+        <li class="nav-item">
+          <a class="nav-link" href="https://t.me/Anihix_Offical" target="_blank"> Community</a>
+        </li>
+
+      </ul>
+    </div>
+
+     <!-- Navbar End -->
+
+            
             <div class="d-flex">
                 <form action="/reload" method="get" role="reload" class="admin-only ">
                     <button type="submit" class="btn btn-primary me-2" name="chatId" value="<!-- Chat_id -->">
