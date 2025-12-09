@@ -59,47 +59,20 @@
         transform: scale(1.05);
     }
 
-    /* Floating Back-to-Top Button */
-.back-to-top {
-  position: fixed;
-  bottom: 20px;
-  right: 18px;
-  background: #0d6efd;
-  color: white;
-  border: none;
-  padding: 10px 14px;
-  border-radius: 50%;
-  font-size: 22px;
-  cursor: pointer;
-  display: none;
-  z-index: 9999;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-}
-
-.back-to-top:hover {
-  background: #084fc7;
-  transform: scale(1.1);
-}
-
 /* Navbar hover effects */
-.navbar-nav .nav-link {
-  font-weight: 500;
-  transition: 0.2s;
-}
+    .navbar-nav .nav-link {
+      font-weight: 450;
+      transition: 0.2s;
+    }
 
-.navbar-nav .nav-link:hover {
-  opacity: 0.8;
-}
+    .navbar-nav .nav-link:hover {
+      opacity: 0.8;
+    }
 
-.navbar-brand {
-  font-size: 1.3rem;
-}
+    .navbar-brand {
+      font-size: 1.2rem;
+    }
     
-.footer {
-    position: absolute;
-    bottom: 0;
-}
     
 </style>
 
@@ -187,15 +160,15 @@
       <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
 
         <li class="nav-item">
-          <a class="nav-link active" href="/">🏠 Home</a>
+          <a class="nav-link active" href="/"> Home</a>
         </li>
 
         <li class="nav-item">
-          <a class="nav-link" href="/index">📂 Categories</a>
+          <a class="nav-link" href="/channel/3425378735"> NetFlix</a>
         </li>
 
         <li class="nav-item">
-          <a class="nav-link" href="https://t.me/Anihix_Offical" target="_blank">💬 Community</a>
+          <a class="nav-link" href="https://t.me/Anihix_Offical" target="_blank"> Community</a>
         </li>
 
       </ul>
@@ -227,8 +200,9 @@
         <button type="button" class="admin-only btn btn-secondary btn-sm" data-bs-toggle="modal"
             data-bs-target="#createFolderModal" onclick="createPopupForm(event)">Create Folder</button>
     </div>
+    <!-- Above ADs  -->
     
-<div class="iframely-embed"><div class="iframely-responsive" style="height: 140px; padding-bottom: 0;"><a href="https://t.me/Anihix_Offical" data-iframely-url="https://iframely.net/mfxKXcRE?theme=dark"></a></div></div><script async src="https://iframely.net/embed.js"></script>
+    <!-- ADS End  -->
 
     <div class="container py-2">
         <!-- Channel grid  -->
@@ -255,25 +229,7 @@
             </p>
         </div>
     </footer>
-    <button id="backToTopBtn" class="back-to-top">
-  ↑
-</button>
-
-<script>
-  const backBtn = document.getElementById("backToTopBtn");
-
-  window.addEventListener("scroll", () => {
-    if (window.scrollY > 300) {
-      backBtn.style.display = "block";
-    } else {
-      backBtn.style.display = "none";
-    }
-  });
-
-  backBtn.addEventListener("click", () => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  });
-</script>
+    
 
 </body>
 <script>
