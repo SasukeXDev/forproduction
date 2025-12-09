@@ -198,8 +198,11 @@
     }
 
     function download() {
-        window.location.href = downloadlink;
+        window.open(downloadlink, '_blank');
     }
+    
+      //  window.location.href = downloadlink;
+ //   }
 
     function get_file() {
         const regex = /(\d+)\?id=(\d+)&/;
