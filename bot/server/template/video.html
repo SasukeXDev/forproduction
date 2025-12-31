@@ -15,14 +15,15 @@
     <!-- Video.js -->
     <link href="https://vjs.zencdn.net/8.10.0/video-js.css" rel="stylesheet">
     <style>
-      /* ================= PLAYER UI ================= */ .video-wrapper{ max-width:48%;
-      margin:auto; background:#000; border-radius:12px; overflow:hidden; box-shadow:0
-      10px 30px rgba(0,0,0,.5); } .video-js{ width:100%; aspect-ratio:16/9; font-size:14px;
-      } .vjs-control-bar{ background:linear-gradient(to top,rgba(0,0,0,.8),transparent);
-      } .vjs-big-play-button{ border-radius:50%; width:80px; height:80px; line-height:80px;
-      font-size:3em; background:rgba(0,0,0,.6); } .card{max-width:48%;margin:auto}
-      .container{gap:10px} @media(max-width:992px){ .video-wrapper,.card{max-width:95%}
-      }
+      /* ===== PLAYER UI ===== */ .video-wrapper { max-width: 48%; margin: auto;
+      background: #000; border-radius: 12px; overflow: hidden; box-shadow: 0
+      10px 30px rgba(0,0,0,.5); } .video-js { width: 100%; aspect-ratio: 16 /
+      9; font-size: 14px; } .vjs-control-bar { background: linear-gradient(to
+      top, rgba(0,0,0,.8), transparent); } .vjs-big-play-button { border-radius:
+      50%; width: 80px; height: 80px; line-height: 80px; font-size: 3em; background:
+      rgba(0,0,0,.6); } .card { max-width: 48%; margin: auto; } .container {
+      gap: 10px; } @media (max-width: 992px) { .video-wrapper, .card { max-width:
+      95%; } }
     </style>
   </head>
   
@@ -34,16 +35,11 @@
         </a>
       </div>
     </nav>
-    <!--=================P LAYER=================- ->
+    <!-- PLAYER -->
     <div class="video-wrapper">
-    <video
-    id="player"
-    class="video-js vjs-big-play-centered"
-    controls
-    playsinline
-    poster="<!-- Poster -->
-    ">
-    </video>
+      <video id="player" class="video-js vjs-big-play-centered" controls playsinline
+      poster="<!-- Poster -->">
+      </video>
     </div>
     <div class="card bg-light mt-3">
       <div class="card-body">
@@ -97,15 +93,15 @@
     <script src="https://vjs.zencdn.net/8.10.0/video.min.js">
     </script>
     <script>
-      /* ================= URL LOGIC ================= */
-      const pageUrl = location.href;
+      /* ===== URL LOGIC ===== */
+      const pageUrl = window.location.href;
       const url = new URL(pageUrl);
       const domain = url.origin;
       const videoId = pageUrl.split('/').pop().split('?')[0];
       const id = url.searchParams.get('id');
       const hash = url.searchParams.get('hash');
 
-      /* 🔥 HLS STREAM URL (SERVER MUST PROVIDE THIS) */
+      /* HLS STREAM (SERVER MUST PROVIDE master.m3u8) */
       const hlsUrl = `$ {
         domain
       }
@@ -115,7 +111,7 @@
         hash
       }`;
 
-      /* ================= PLAYER INIT ================= */
+      /* ===== PLAYER INIT ===== */
       const player = videojs('player', {
         techOrder: ['html5'],
         controls: true,
@@ -131,60 +127,70 @@
         }
       });
 
-      /* SET HLS SOURCE */
-      player.ready(() = >{
+      /* SET SOURCE AFTER READY */
+      player.ready(function() {
         player.src({
           src: hlsUrl,
           type: 'application/x-mpegURL'
         });
       });
 
-      /* ================= YOUTUBE SEEK ================= */
-      player.el().addEventListener('dblclick', e = >{
-        const r = player.el().getBoundingClientRect();
-        const x = e.clientX - r.left;
-        const t = player.currentTime();
-        player.currentTime(x < r.width / 2 ? Math.max(0, t - 10) : Math.min(player.duration(), t + 10));
+      /* ===== YOUTUBE-STYLE SEEK ===== */
+      player.el().addEventListener('dblclick',
+      function(e) {
+        const rect = player.el().getBoundingClientRect();
+        const clickX = e.clientX - rect.left;
+        const current = player.currentTime();
+
+        if (clickX < rect.width / 2) {
+          player.currentTime(Math.max(0, current - 10));
+        } else {
+          player.currentTime(Math.min(player.duration(), current + 10));
+        }
       });
 
-      /* ================= AUTO AUDIO / SUBS ================= */
-      player.on('loadedmetadata', () = >{
-        const a = player.audioTracks();
-        if (a && a.length > 0) a[0].enabled = true;
+      /* ===== AUDIO & SUBTITLE AUTO ===== */
+      player.on('loadedmetadata',
+      function() {
+        const audioTracks = player.audioTracks();
+        if (audioTracks && audioTracks.length) {
+          audioTracks[0].enabled = true;
+        }
 
-        const s = player.textTracks();
-        for (let i = 0; i < s.length; i++) {
-          if (s[i].kind === 'subtitles') {
-            s[i].mode = 'showing';
+        const textTracks = player.textTracks();
+        for (let i = 0; i < textTracks.length; i++) {
+          if (textTracks[i].kind === 'subtitles') {
+            textTracks[i].mode = 'showing';
             break;
           }
         }
       });
 
-      /* ================= EXTERNAL PLAYERS ================= */
+      /* ===== EXTERNAL PLAYERS ===== */
       function mx_player() {
         location.href = `intent: $ {
           hlsUrl
         }#Intent;
         package = com.mxtech.videoplayer.ad;
-        end`
+        end`;
       }
       function vlc_player() {
-        location.href = `vlc: //${hlsUrl}`}
-        function km_player() {
-          location.href = `intent: $ {
-            hlsUrl
-          }#Intent;
-          package = com.kmplayer;
-          end`
-        }
-        function download() {
-          location.href = hlsUrl
-        }
-        function copyUrl() {
-          navigator.clipboard.writeText(hlsUrl);
-          alert("Copied")
-        }
+        location.href = `vlc: //${hlsUrl}`;
+      }
+      function km_player() {
+        location.href = `intent: $ {
+          hlsUrl
+        }#Intent;
+        package = com.kmplayer;
+        end`;
+      }
+      function download() {
+        location.href = hlsUrl;
+      }
+      function copyUrl() {
+        navigator.clipboard.writeText(hlsUrl);
+        alert('Copied');
+      }
     </script>
   </body>
 
