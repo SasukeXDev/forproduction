@@ -1,21 +1,39 @@
-# hls_converter.py
-import subprocess
 import os
+import subprocess
 from pathlib import Path
-from flask import Flask, request, jsonify, send_from_directory
+import yt_dlp
 
-app = Flask(__name__)
-
+# Directory to store HLS output
 HLS_DIR = "streams/hls"
 
-def convert_to_hls(input_url, output_dir):
+def download_and_convert_to_hls(tg_url):
+    """
+    1. Download Telegram stream with yt-dlp
+    2. Convert to HLS (.m3u8 + .ts) using ffmpeg
+    """
+    # Create unique folder
+    filename = tg_url.split("/")[-1].split("?")[0]
+    output_dir = os.path.join(HLS_DIR, filename)
     Path(output_dir).mkdir(parents=True, exist_ok=True)
-    master_file = os.path.join(output_dir, "master.m3u8")
 
+    # Download video temporarily
+    temp_file = os.path.join(output_dir, "temp.mp4")
+    ydl_opts = {
+        "outtmpl": temp_file,
+        "format": "bestvideo+bestaudio/best",
+        "quiet": False
+    }
+
+    print(f"[INFO] Downloading Telegram video: {tg_url}")
+    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+        ydl.download([tg_url])
+
+    # Convert to HLS
+    master_file = os.path.join(output_dir, "master.m3u8")
     cmd = [
         "ffmpeg",
         "-y",
-        "-i", input_url,          # input URL or local path
+        "-i", temp_file,
         "-c:v", "copy",
         "-c:a", "copy",
         "-c:s", "webvtt",
@@ -23,40 +41,18 @@ def convert_to_hls(input_url, output_dir):
         "-hls_time", "6",
         "-hls_list_size", "0",
         "-hls_flags", "independent_segments",
-        "-hls_segment_filename",
-        f"{output_dir}/seg_%03d.ts",
+        "-hls_segment_filename", f"{output_dir}/seg_%03d.ts",
         master_file
     ]
 
+    print(f"[INFO] Converting to HLS...")
     subprocess.run(cmd, check=True)
+
+    # Remove temp file to save space
+    os.remove(temp_file)
+
+    print(f"[SUCCESS] HLS available at: {master_file}")
     return master_file
 
-@app.route("/convert_hls", methods=["POST"])
-def convert_hls_endpoint():
-    data = request.get_json()
-    video_url = data.get("video_url")
-
-    if not video_url:
-        return jsonify({"error": "No video_url provided"}), 400
-
-    # Create unique folder name based on filename
-    filename = video_url.split("/")[-1].split("?")[0]
-    output_dir = os.path.join(HLS_DIR, filename)
-
-    if not os.path.exists(os.path.join(output_dir, "master.m3u8")):
-        try:
-            convert_to_hls(video_url, output_dir)
-        except Exception as e:
-            return jsonify({"error": str(e)}), 500
-
-    # Return HLS link
-    hls_link = f"/hls/{filename}/master.m3u8"
-    return jsonify({"hls_link": hls_link})
-
-@app.route("/hls/<path:folder>/<path:file>")
-def serve_hls(folder, file):
-    return send_from_directory(os.path.join(HLS_DIR, folder), file)
-
 if __name__ == "__main__":
-    os.makedirs(HLS_DIR, exist_ok=True)
-    app.run(host="0.0.0.0", port=5000, debug=True)
+
