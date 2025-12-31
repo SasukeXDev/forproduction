@@ -11,3 +11,8 @@ pyrogram==2.0.106
 tmdbv3api
 requests
 
+ffmpeg
+Flask==2.3.6
+gunicorn==21.2.0
+
+
