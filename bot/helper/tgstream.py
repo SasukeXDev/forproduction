@@ -1,40 +1,43 @@
-import os
-from bot.server.template.video import tg_url, filename
-import subprocess
-from pathlib import Path
-import yt_dlp
 import re
+from pathlib import Path
+import subprocess
+from config import API_ID, API_HASH 
+from pyrogram import Client
 
+# 🔹 CONFIG
+API_ID = ''         # Telegram API ID
+API_HASH = ''
+SESSION_NAME = "ano"   # or a custom session name
 BASE_DIR = Path("streams/hls")
 
+# 🔹 Helper to make browser-safe folder names
 def safe_id(filename: str) -> str:
-    filename = name.lower()
-    filename = re.sub(r"\.[^.]+$", "", filename)   # remove extension
-    filename = re.sub(r"[^a-z0-9]+", "-", filename)
-    return filename.strip("-")
+    name = filename.lower()
+    name = re.sub(r"\.[^.]+$", "", name)
+    name = re.sub(r"[^a-z0-9]+", "-", name)
+    return name.strip("-")
 
-def convert(tg_url: str, filename: str):
-    video_id = safe_id(filename)
-    out_dir = BASE_DIR / video_id
+# 🔹 Download video from Telegram
+def download_from_telegram(chat_id: str, message_id: int, filename: str) -> Path:
+    client = Client(SESSION_NAME, api_id=API_ID, api_hash=API_HASH)
+    out_dir = BASE_DIR / safe_id(filename)
     out_dir.mkdir(parents=True, exist_ok=True)
-
     input_file = out_dir / "input.mp4"
+
+    with client:
+        print(f"⬇️ Downloading message {message_id} from {chat_id}")
+        client.download_media(
+            message=(chat_id, message_id),
+            file_name=str(input_file)
+        )
+    print("✅ Download completed:", input_file)
+    return input_file
+
+# 🔹 Convert to HLS
+def convert_to_hls(input_file: Path):
+    out_dir = input_file.parent
     hls_file = out_dir / "master.m3u8"
 
-    print("VIDEO ID:", video_id)
-
-    # 1️⃣ Download video
-    ydl_opts = {
-        "outtmpl": str(input_file),
-        "format": "best",
-        "merge_output_format": "mp4",
-        "quiet": False
-    }
-
-    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        ydl.download([tg_url])
-
-    # 2️⃣ Convert to browser-safe HLS
     cmd = [
         "ffmpeg", "-y",
         "-i", str(input_file),
@@ -43,6 +46,7 @@ def convert(tg_url: str, filename: str):
         "-profile:v", "main",
         "-level", "4.0",
         "-c:a", "aac",
+        "-ar", "48000",
         "-f", "hls",
         "-hls_time", "6",
         "-hls_list_size", "0",
@@ -51,16 +55,17 @@ def convert(tg_url: str, filename: str):
         str(hls_file)
     ]
 
+    print("🔁 Converting to HLS...")
     subprocess.run(cmd, check=True)
-    print("HLS READY:", hls_file)
+    print("✅ HLS READY:", hls_file)
+    return hls_file
 
-
-if __name__ == "__main__":
-    convert(
-        "TELEGRAM_STREAM_URL_HERE",
-        "Stranger Things S05E08 720p 10bit WEBRip x265 HEVC.mkv"
-    )
+# 🔹 MAIN FUNCTION
+def process_telegram_video(chat_id: str, message_id: int, filename: str):
+    input_file = download_from_telegram(chat_id, message_id, filename)
+    hls_file = convert_to_hls(input_file)
+    return hls_file
 
 # 🔹 Example usage
 if __name__ == "__main__":
-
+    # Replace with your channel ID & message ID
