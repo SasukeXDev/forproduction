@@ -106,15 +106,11 @@
 
     <div class="video-player">
     <video
-        id="player"
-        class="video-js vjs-big-play-centered"
-        controls
-        preload="auto"
-        playsinline
-        crossorigin="anonymous"
-        poster="<!-- Poster -->"
-        data-setup='{}'>
-        <source src="#" type="video/mp4">
+      id="player"
+      class="video-js vjs-big-play-centered"
+      controls
+      playsinline
+      poster="<!-- Poster -->">
     </video>
     </div>
     <div class="card bg-light mb-3" style="margin: auto; border-radius: 5px;">
@@ -190,28 +186,20 @@
 
     // Initialize Video.js
     const player = videojs('player', {
-    controls: true,
-    autoplay: false,
-    preload: 'auto',
-    fluid: true,
-    playbackRates: [0.5, 1, 1.25, 1.5, 2],
-    controlBar: {
-        children: [
-            'playToggle',
-            'seekBackward',
-            'seekForward',
-            'volumePanel',
-            'currentTimeDisplay',
-            'timeDivider',
-            'durationDisplay',
-            'progressControl',
-            'audioTrackButton',
-            'subsCapsButton',
-            'playbackRateMenuButton',
-            'fullscreenToggle'
-        ]
-    }
-});
+      techOrder: ['html5'],
+      controls: true,
+      preload: 'auto',
+      fluid: true
+    });
+
+    player.ready(() => {
+      player.src({
+        src: downloadlink,
+        type: 'video/mp4'
+      });
+      player.load();
+    });
+
     // External players
     function mx_player() {
         window.location.href = `intent:${downloadlink1}#Intent;package=com.mxtech.videoplayer.ad;end`;
