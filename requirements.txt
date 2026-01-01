@@ -12,3 +12,5 @@ tmdbv3api
 requests
 
 
+yt-dlp
+ffmpeg
