@@ -1,61 +1,72 @@
 import os
 import subprocess
 from pathlib import Path
-from bot.server.template.video import tg_url
 import yt_dlp
 
-# Directory to store HLS output
 HLS_DIR = "streams/hls"
 
 def download_and_convert_to_hls(tg_url):
-    """
-    1. Download Telegram stream with yt-dlp
-    2. Convert to HLS (.m3u8 + .ts) using ffmpeg
-    """
-    # Create unique folder
-    filename = tg_url.split("/")[-1].split("?")[0]
-    output_dir = os.path.join(HLS_DIR, filename)
-    Path(output_dir).mkdir(parents=True, exist_ok=True)
+    video_id = tg_url.split("/")[-1].split("?")[0]
+    output_dir = Path(HLS_DIR) / video_id
+    output_dir.mkdir(parents=True, exist_ok=True)
 
-    # Download video temporarily
-    temp_file = os.path.join(output_dir, "temp.mp4")
+    input_file = output_dir / "input.mkv"
+
+    # 1️⃣ Download BEST with all audio + subs
     ydl_opts = {
-        "outtmpl": temp_file,
+        "outtmpl": str(input_file),
         "format": "bestvideo+bestaudio/best",
-        "quiet": False
+        "merge_output_format": "mkv",
+        "writesubtitles": True,
+        "writeautomaticsub": True,
+        "subtitleslangs": ["all"],
+        "quiet": True
     }
 
-    print(f"[INFO] Downloading Telegram video: {tg_url}")
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         ydl.download([tg_url])
 
-    # Convert to HLS
-    master_file = os.path.join(output_dir, "master.m3u8")
+    master = output_dir / "master.m3u8"
+
+    # 2️⃣ FFmpeg → real HLS with tracks
     cmd = [
         "ffmpeg",
         "-y",
-        "-i", temp_file,
-        "-c:v", "copy",
-        "-c:a", "copy",
+        "-i", str(input_file),
+
+        # VIDEO (browser-safe)
+        "-map", "0:v:0",
+        "-c:v", "libx264",
+        "-profile:v", "main",
+        "-level", "4.0",
+        "-pix_fmt", "yuv420p",
+
+        # AUDIO (ALL TRACKS)
+        "-map", "0:a?",
+        "-c:a", "aac",
+
+        # SUBTITLES → WebVTT
+        "-map", "0:s?",
         "-c:s", "webvtt",
+
+        # HLS FLAGS
         "-f", "hls",
         "-hls_time", "6",
-        "-hls_list_size", "0",
+        "-hls_playlist_type", "vod",
         "-hls_flags", "independent_segments",
-        "-hls_segment_filename", f"{output_dir}/seg_%03d.ts",
-        master_file
+        "-hls_segment_type", "mpegts",
+        "-hls_segment_filename", f"{output_dir}/seg_%v_%03d.ts",
+
+        # STREAM MAPPING
+        "-var_stream_map",
+        "v:0,a:0,agroup:audio "
+        "a:1,agroup:audio "
+        "s:0,sgroup:subs "
+        "s:1,sgroup:subs",
+
+        str(master)
     ]
 
-    print(f"[INFO] Converting to HLS...")
     subprocess.run(cmd, check=True)
 
-    # Remove temp file to save space
-    os.remove(temp_file)
-
-    print(f"[SUCCESS] HLS available at: {master_file}")
-    return master_file
-
-if __name__ == "__main__":
-   #  tg_url = input("Enter Telegram stream URL: ")
-  #   hls_master = download_and_convert_to_hls(tg_url)
-  #   print(f"Use this HLS link in Video.js: {hls_master}")
+    return str(master)
