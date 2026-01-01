@@ -117,11 +117,7 @@
       playsinline
       poster="<!-- Poster -->">
     </video>
-
-    <div id="tracks-info">
-        <p id="audio-tracks"></p>
-        <p id="subtitle-tracks"></p>
-    </div>
+        
     <div class="card bg-light mb-3" style="margin: auto; border-radius: 5px;">
         <div class="card-body">
             <h5 class="card-title mb-2" style="font-weight: 600;">🎬 Name: <!-- Title --></h5>
@@ -208,7 +204,7 @@
     player.ready(() => {
       player.src({
         src: downloadlink,
-        type: "application/x-mpegURL"
+        type: "video/mp4"
       });
 
       player.textTracks().addEventListener('addtrack', () => {
