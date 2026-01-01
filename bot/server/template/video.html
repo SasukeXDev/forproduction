@@ -186,7 +186,8 @@
     const downloadlink1 = `${rawDomain}/${videoId}/${encodedName}?id=${idParam}&hash=${hashParam}`;
 
     // Initialize Video.js
-    const hlsUrl = "/streams/hls/VIDEO_ID/master.m3u8";
+    const filename = "<!-- Filename -->";
+    const hlsUrl = "streams/hls/<!-- Filename -->/master.m3u8";
     
     const player = videojs('player', {
       techOrder: ['html5'],
