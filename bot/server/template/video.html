@@ -175,10 +175,10 @@
     const hashParam = new URLSearchParams(window.location.search).get('hash');
     const encodedName = encodeURIComponent('<!-- Filename -->');
 
-    const downloadlink = `${domainUrl}/${videoId}/${encodedName}?id=${idParam}&hash=${hashParam}`;
+    const tg_url = `${domainUrl}/${videoId}/${encodedName}?id=${idParam}&hash=${hashParam}`;
     const rawDomain = domainUrl.replace(/^https?:\/\//, "");
     const downloadlink1 = `${rawDomain}/${videoId}/${encodedName}?id=${idParam}&hash=${hashParam}`;
-
+    const hls_master = downloadlink;
 
     const player = new Plyr('#player', {
         controls: [
