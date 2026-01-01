@@ -12,7 +12,7 @@
     <link href="https://vjs.zencdn.net/8.10.0/video-js.css" rel="stylesheet">
     <script src="https://vjs.zencdn.net/8.10.0/video.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/videojs-contrib-quality-levels"></script>
-    <script disable-devtool-auto src='https://cdn.jsdelivr.net/npm/disable-devtool'></script>
+<!--    <script disable-devtool-auto src='https://cdn.jsdelivr.net/npm/disable-devtool'></script>  -->
     <style>
         body {
             height: 100vh;
@@ -186,29 +186,33 @@
     const downloadlink1 = `${rawDomain}/${videoId}/${encodedName}?id=${idParam}&hash=${hashParam}`;
 
     // Initialize Video.js
-    const filename = "<!-- Filename -->";
-    const hlsUrl = "/streams/hls/${filename}/master.m3u8";
-    
+    const filename = "<!-- Filename -->";   // SINGLE SOURCE
+    const hlsUrl = `/streams/hls/${filename}/master.m3u8`;
+
     const player = videojs('player', {
-      techOrder: ['html5'],
-      fluid: true,
-      controls: true,
-      html5: {
-        vhs: {
-          overrideNative: true
+        techOrder: ['html5'],
+        fluid: true,
+        controls: true,
+        html5: {
+            vhs: {
+                overrideNative: true
+            }
         }
-      }
     });
 
     player.ready(() => {
-      player.src({
-        src: hlsUrl,
-        type: "application/x-mpegURL"
-      });
+        console.log("Loading HLS:", hlsUrl);
 
-      player.textTracks().addEventListener('addtrack', () => {
-        console.log("Subtitle detected");
-      });
+        player.src({
+            src: hlsUrl,
+            type: "application/x-mpegURL"
+        });
+
+        player.on('loadedmetadata', () => {
+            console.log("Tracks detected:");
+            console.log(player.audioTracks());
+            console.log(player.textTracks());
+        });
     });
 
     // External players
@@ -250,15 +254,5 @@
             });
     }
     
-   function updateVideoSource() {
-        player.src({
-            src: downloadlink,
-            type: 'video/mp4'
-        });
-    }
-
-    window.onload = function () {
-        updateVideoSource();
-    };
 </script>
 </html>
