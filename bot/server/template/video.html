@@ -187,30 +187,32 @@
     const tg_url = `${domainUrl}/${videoId}/${encodedName}?id=${idParam}&hash=${hashParam}`;
     const rawDomain = domainUrl.replace(/^https?:\/\//, "");
     const downloadlink1 = `${rawDomain}/${videoId}/${encodedName}?id=${idParam}&hash=${hashParam}`;
-    const hls_master = downloadlink;
+    const tg_url = downloadlink;
 
-    const player = new Plyr('#player', {
-        controls: [
-            'play-large',
-            'rewind',
-            'play',
-            'fast-forward',
-            'progress',
-            'current-time',
-            'duration',
-            'mute',
-            'volume',
-            'captions',
-            'settings',
-            'pip',
-            'airplay',     
-            'fullscreen'
-        ],
-        hideControls: true,
-        keyboard: { focused: true, global: true },
-        loop: { active: false },
-    });
-
+    // Initialize Video.js
+    const player = videojs('player', {
+    controls: true,
+    autoplay: false,
+    preload: 'auto',
+    fluid: true,
+    playbackRates: [0.5, 1, 1.25, 1.5, 2],
+    controlBar: {
+        children: [
+            'playToggle',
+            'seekBackward',
+            'seekForward',
+            'volumePanel',
+            'currentTimeDisplay',
+            'timeDivider',
+            'durationDisplay',
+            'progressControl',
+            'audioTrackButton',
+            'subsCapsButton',
+            'playbackRateMenuButton',
+            'fullscreenToggle'
+        ]
+    }
+});
     // External players
     function mx_player() {
         window.location.href = `intent:${downloadlink1}#Intent;package=com.mxtech.videoplayer.ad;end`;
@@ -249,11 +251,14 @@
                 console.error('Failed to copy URL: ', error);
             });
     }
-    function updateVideoSource() {
-        const videoElement = document.getElementById('player');
-        const newSrc = downloadlink;
-        videoElement.src = newSrc;
+    
+   function updateVideoSource() {
+        player.src({
+            src: downloadlink,
+            type: 'video/mp4'
+        });
     }
+
     window.onload = function () {
         updateVideoSource();
     };
