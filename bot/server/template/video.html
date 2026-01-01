@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="https://bootswatch.com/5/<!-- Theme -->/bootstrap.min.css">
     <link href="https://vjs.zencdn.net/8.10.0/video-js.css" rel="stylesheet">
     <script src="https://vjs.zencdn.net/8.10.0/video.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/videojs-contrib-quality-levels"></script>
     <script disable-devtool-auto src='https://cdn.jsdelivr.net/npm/disable-devtool'></script>
     <style>
         body {
@@ -180,24 +181,33 @@
     const hashParam = new URLSearchParams(window.location.search).get('hash');
     const encodedName = encodeURIComponent('<!-- Filename -->');
 
-    const downloadlink = `${domainUrl}/${videoId}/${encodedName}?id=${idParam}&hash=${hashParam}`;
+    const tg_url = `${domainUrl}/${videoId}/${encodedName}?id=${idParam}&hash=${hashParam}`;
     const rawDomain = domainUrl.replace(/^https?:\/\//, "");
     const downloadlink1 = `${rawDomain}/${videoId}/${encodedName}?id=${idParam}&hash=${hashParam}`;
 
     // Initialize Video.js
+    const hlsUrl = "/streams/hls/VIDEO_ID/master.m3u8";
+    
     const player = videojs('player', {
       techOrder: ['html5'],
+      fluid: true,
       controls: true,
-      preload: 'auto',
-      fluid: true
+      html5: {
+        vhs: {
+          overrideNative: true
+        }
+      }
     });
 
     player.ready(() => {
       player.src({
-        src: downloadlink,
-        type: 'video/mp4'
+        src: hlsUrl,
+        type: "application/x-mpegURL"
       });
-      player.load();
+
+      player.textTracks().addEventListener('addtrack', () => {
+        console.log("Subtitle detected");
+      });
     });
 
     // External players
