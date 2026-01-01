@@ -3,72 +3,63 @@ from bot.server.template.video import tg_url, filename
 import subprocess
 from pathlib import Path
 import yt_dlp
+import re
 
-HLS_BASE = Path("streams/hls")
+BASE_DIR = Path("streams/hls")
 
-def convert_tg_to_hls(tg_url: str, filename: str):
-    """
-    filename = <!-- Filename --> (SAME as video page)
-    """
+def safe_id(filename: str) -> str:
+    filename = name.lower()
+    filename = re.sub(r"\.[^.]+$", "", filename)   # remove extension
+    filename = re.sub(r"[^a-z0-9]+", "-", filename)
+    return filename.strip("-")
 
-    output_dir = HLS_BASE / filename
-    output_dir.mkdir(parents=True, exist_ok=True)
+def convert(tg_url: str, filename: str):
+    video_id = safe_id(filename)
+    out_dir = BASE_DIR / video_id
+    out_dir.mkdir(parents=True, exist_ok=True)
 
-    input_file = output_dir / "input.mkv"
-    master_playlist = output_dir / "master.m3u8"
+    input_file = out_dir / "input.mp4"
+    hls_file = out_dir / "master.m3u8"
 
-    # 1️⃣ Download Telegram stream (all audio + subs)
+    print("VIDEO ID:", video_id)
+
+    # 1️⃣ Download video
     ydl_opts = {
         "outtmpl": str(input_file),
-        "format": "bestvideo+bestaudio/best",
-        "merge_output_format": "mkv",
-        "writesubtitles": True,
-        "writeautomaticsub": True,
-        "subtitleslangs": ["all"],
+        "format": "best",
+        "merge_output_format": "mp4",
         "quiet": False
     }
 
-    print("[INFO] Downloading Telegram stream...")
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         ydl.download([tg_url])
 
-    # 2️⃣ Convert to TRUE multi-track HLS
+    # 2️⃣ Convert to browser-safe HLS
     cmd = [
-        "ffmpeg",
-        "-y",
+        "ffmpeg", "-y",
         "-i", str(input_file),
-
-        # VIDEO (browser compatible)
-        "-map", "0:v:0",
         "-c:v", "libx264",
         "-pix_fmt", "yuv420p",
         "-profile:v", "main",
         "-level", "4.0",
-
-        # AUDIO (ALL)
-        "-map", "0:a?",
         "-c:a", "aac",
-
-        # SUBS → WebVTT
-        "-map", "0:s?",
-        "-c:s", "webvtt",
-
-        # HLS
         "-f", "hls",
         "-hls_time", "6",
-        "-hls_playlist_type", "vod",
+        "-hls_list_size", "0",
         "-hls_flags", "independent_segments",
-        "-hls_segment_filename", f"{output_dir}/seg_%03d.ts",
-
-        str(master_playlist)
+        "-hls_segment_filename", f"{out_dir}/seg_%03d.ts",
+        str(hls_file)
     ]
 
-    print("[INFO] Creating HLS...")
     subprocess.run(cmd, check=True)
+    print("HLS READY:", hls_file)
 
-    print(f"[SUCCESS] HLS READY → {master_playlist}")
-    return master_playlist
 
+if __name__ == "__main__":
+    convert(
+        "TELEGRAM_STREAM_URL_HERE",
+        "Stranger Things S05E08 720p 10bit WEBRip x265 HEVC.mkv"
+    )
 
 # 🔹 Example usage
 if __name__ == "__main__":
