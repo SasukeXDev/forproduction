@@ -219,9 +219,14 @@
     });
 
     /* Load video */
-    player.src({
-        src:downloadlink,
-         type:'video/mp4'});
+    function updateVideoSource() {
+        player.src({ src: downloadlink, 
+                    type: 'video/mp4' 
+                   }); 
+    }
+    window.onload = function () {
+        updateVideoSource();
+    };
 
     player.on('loadedmetadata', function () {
 
@@ -240,7 +245,14 @@
         }
     });
 
-
+    function updateVideoSource() {
+        player.src({ src: downloadlink, 
+                    type: 'video/mp4' 
+                   }); 
+    }
+    window.onload = function () {
+        updateVideoSource();
+    };
 
     
     // External players
