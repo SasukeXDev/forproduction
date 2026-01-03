@@ -113,7 +113,7 @@
       id="player"
       class="video-js vjs-big-play-centered"
       controls
-      preload="auto"
+      preload="metadata"
       playsinline
       poster="<!-- Poster -->">
     </video> 
@@ -189,71 +189,49 @@
     const downloadlink1 = `${rawDomain}/${videoId}/${encodedName}?id=${idParam}&hash=${hashParam}`;
 
     // Initialize Video.js
-    const player = videojs('player', {
-    controls: true,
-    autoplay: false,
-    preload: 'auto',
-    fluid: true,
-    playbackRates: [0.5, 1, 1.25, 1.5, 2],
-    controlBar: {
-        children: [
-            'playToggle',
-            'seekBackward',
-            'seekForward',
-            'volumePanel',
-            'currentTimeDisplay',
-            'timeDivider',
-            'durationDisplay',
-            'progressControl',
-            'audioTrackButton',
-            'subsCapsButton',
-            'playbackRateMenuButton',
-            'fullscreenToggle'
-            ]
-        }
-    });
-
-    player.seekButtons({
-    forward: 10,
-    back: 10
-    });
-
-    /* Load video */
-    function updateVideoSource() {
-        player.src({ src: downloadlink, 
-                    type: 'video/mp4' 
-                   }); 
+    const player = videojs("player", {
+  techOrder: ["html5"],
+  autoplay: false,
+  preload: "metadata",
+  fluid: true,
+  controls: true,
+  playbackRates: [0.5, 1, 1.25, 1.5, 2],
+  html5: {
+    nativeAudioTracks: false,
+    nativeVideoTracks: false,
+    vhs: {
+      overrideNative: false
     }
-    window.onload = function () {
-        updateVideoSource();
-    };
+  },
+  controlBar: {
+    pictureInPictureToggle: false,
+    volumePanel: { inline: false }
+  }
+});
 
-    player.on('loadedmetadata', function () {
+/* --------------------------------------------------
+   SET SOURCE (IMPORTANT)
+-------------------------------------------------- */
+player.ready(() => {
+  player.src({
+    src: downloadlink,
+    type: "video/mp4"
+  });
+});
 
-    // Enable audio track menu if available
-    const audioTracks = player.audioTracks();
-    if (audioTracks && audioTracks.length > 0) {
-        audioTracks.addEventListener('change', () => {});
-    }
+/* --------------------------------------------------
+   FIX AUDIO-ONLY / BLACK SCREEN ISSUE
+-------------------------------------------------- */
+player.on("loadedmetadata", () => {
+  player.currentTime(0);
+});
 
-    // Enable subtitles if detected
-    const textTracks = player.textTracks();
-    for (let i = 0; i < textTracks.length; i++) {
-        if (textTracks[i].kind === 'subtitles') {
-            textTracks[i].mode = 'showing';
-            }
-        }
-    });
-
-    function updateVideoSource() {
-        player.src({ src: downloadlink, 
-                    type: 'video/mp4' 
-                   }); 
-    }
-    window.onload = function () {
-        updateVideoSource();
-    };
-
+/* --------------------------------------------------
+   DEBUG (optional)
+-------------------------------------------------- */
+player.on("error", () => {
+  console.error("Player error:", player.error());
+});
     
     // External players
     function mx_player() {
