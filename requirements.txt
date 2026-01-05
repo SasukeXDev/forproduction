@@ -12,5 +12,6 @@ tmdbv3api
 requests
 
 
+flask
 yt-dlp
 ffmpeg
