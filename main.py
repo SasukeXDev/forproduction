@@ -5,6 +5,26 @@ import hashlib
 
 app = Flask(__name__)
 
+@app.route("/login")
+def login():
+    return render_template("login.html")
+
+@app.route("/")
+def home():
+    return render_template("home.html")
+
+@app.route("/channel")
+def index():
+    return render_template("index.html")
+
+@app.route('/watch')
+def video():
+    return render_template("video.html")
+
+@app.route('/dl')
+def dl():
+    return render_template("dl.html")
+
 # Directory to store HLS segments
 HLS_OUTPUT_DIR = "static/streams"
 if not os.path.exists(HLS_OUTPUT_DIR):
