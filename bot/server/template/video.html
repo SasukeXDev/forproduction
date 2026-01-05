@@ -225,12 +225,14 @@
             
             const data = await response.json();
 
+            const hlsUrl = data.hls_link.replace(/^http:\/\//i, 'https://');
+
             if (data.status === "success") {
             const player = videojs('player');
         // Give the server a tiny bit more time to write the first segment
             setTimeout(() => {
                 player.src({
-                    src: data.hls_link,
+                    src: hlsUrl,
                     type: 'application/x-mpegURL'
                 });
 
