@@ -234,13 +234,19 @@
                     type: 'application/x-mpegURL'
                 });
 
-                player.ready(() => {
-                    player.play();
 
-                    // DEBUG: log available tracks
-                    console.log("Audio Tracks:", player.audioTracks());
-    console.log("Text Tracks:", player.textTracks());
-                });
+            player.ready(() => {
+                const audioTracks = player.audioTracks();
+
+                if (audioTracks && audioTracks.length > 1) {
+                    console.log("Audio tracks detected:", audioTracks.length);
+
+                    for (let i = 0; i < audioTracks.length; i++) {
+                        audioTracks[i].enabled = (i === 0);
+                    }
+                }
+            });
+
 
             }, 1000); 
         } else {
