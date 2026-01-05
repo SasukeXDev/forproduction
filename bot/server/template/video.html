@@ -199,6 +199,7 @@
     const backendUrl = 'https://hls-converter-sy1z.onrender.com/convert';
     
     async function startHLSStream() {
+        console.log("Requesting HLS conversion...");
         try {
             const response = await fetch(backendUrl, {
                 method: 'POST',
@@ -207,15 +208,18 @@
             });
             
             const data = await response.json();
-            
-            if (data.hls_link) {
-                const fullHlsUrl = `${data.hls_link}`;
-                player.src({
-                    src: fullHlsUrl,
-                    type: 'application/x-mpegURL'
-                });
+
+            if (data.status === "success") {
+            const player = videojs('player');
+        // Give the server a tiny bit more time to write the first segment
+            setTimeout(() => {
+                player.src({ src: data.hls_link, type: 'application/x-mpegURL' });
                 player.play();
-            }
+            }, 1000); 
+        } else {
+            alert("Server is busy, try again in a moment.");
+        }
+            
         } catch (error) {
             console.error("HLS Conversion failed, falling back to MP4:", error);
             player.src({ src: downloadlink, type: 'video/mp4' });
