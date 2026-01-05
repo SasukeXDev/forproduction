@@ -195,9 +195,12 @@
     });
 
     // 3. BRIDGE: SEND LINK TO PYTHON AND START STREAM
+
+    const backendUrl = 'https://forproduction.onrender.com/convert';
+    
     async function startHLSStream() {
         try {
-            const response = await fetch('http://localhost:5000/convert', {
+            const response = await fetch(backendUrl, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ url: downloadlink })
@@ -206,8 +209,9 @@
             const data = await response.json();
             
             if (data.hls_link) {
+                const fullHlsUrl = `https://forproduction.onrender.com${data.hls_link}`;
                 player.src({
-                    src: data.hls_link,
+                    src: fullHlsUrl,
                     type: 'application/x-mpegURL'
                 });
                 player.play();
