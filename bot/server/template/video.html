@@ -209,7 +209,7 @@
             const data = await response.json();
             
             if (data.hls_link) {
-                const fullHlsUrl = `https://hls-converter-sy1z.onrender.com${data.hls_link}`;
+                const fullHlsUrl = `${data.hls_link}`;
                 player.src({
                     src: fullHlsUrl,
                     type: 'application/x-mpegURL'
