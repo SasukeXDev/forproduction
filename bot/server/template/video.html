@@ -196,7 +196,7 @@
 
     // 3. BRIDGE: SEND LINK TO PYTHON AND START STREAM
 
-    const backendUrl = 'https://forproduction.onrender.com/convert';
+    const backendUrl = 'https://hls-converter-sy1z.onrender.com/convert';
     
     async function startHLSStream() {
         try {
@@ -209,7 +209,7 @@
             const data = await response.json();
             
             if (data.hls_link) {
-                const fullHlsUrl = `https://forproduction.onrender.com${data.hls_link}`;
+                const fullHlsUrl = `https://hls-converter-sy1z.onrender.com${data.hls_link}`;
                 player.src({
                     src: fullHlsUrl,
                     type: 'application/x-mpegURL'
