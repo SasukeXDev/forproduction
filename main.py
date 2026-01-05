@@ -41,6 +41,6 @@ def convert():
 
 if __name__ == '__main__':
 # Render provides a PORT environment variable. If not found, use 5000.
-    port = int(os.environ.get("PORT", 5000))
+    port = int(os.environ.get("PORT", 8080))
     # host='0.0.0.0' allows external access
     app.run(host='0.0.0.0', port=port)
