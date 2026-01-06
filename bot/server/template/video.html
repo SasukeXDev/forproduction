@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -7,86 +8,14 @@
     <link rel="icon" href="https://homies-theta.vercel.app/logo.png" type="image/x-icon">
     <link rel="shortcut icon" href="https://homies-theta.vercel.app/logo.png" type="image/x-icon">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
-    <title>360Hub: <!-- Title --> </title>
-    <link rel="stylesheet" href="https://bootswatch.com/5/<!-- Theme -->/bootstrap.min.css">
-    <link href="https://vjs.zencdn.net/8.10.0/video-js.css" rel="stylesheet">
-    <script src="https://vjs.zencdn.net/8.10.0/video.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/videojs-contrib-quality-levels"></script>
-    <script src="https://cdn.jsdelivr.net/npm/videojs-http-streaming@3.10.0/dist/videojs-http-streaming.min.js"></script>
-
-  <!--  <script disable-devtool-auto src='https://cdn.jsdelivr.net/npm/disable-devtool'></script>  -->
+    <title>360Hub: </title>
+    <link rel="stylesheet" href="https://bootswatch.com/5/darkly/bootstrap.min.css"> <link href="https://vjs.zencdn.net/8.10.0/video-js.css" rel="stylesheet">
     <style>
-        body {
-            height: 100vh;
-            margin: 0;
-            justify-content: center;
-            align-items: center;
-
-        }
-
-        .container {
-            margin: auto;
-            padding: 0px;
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: flex-start;
-            align-items: flex-start;
-            gap: 10px;
-        }
-
-        a {
-            text-decoration: none;
-        }
-
-        .card {
-            align-items: left;
-            box-shadow: none;
-            border-radius: 0%;
-            max-width: 48%
-        }
-
-        .video-player {
-            max-width: 48%;
-            margin: auto;
-            padding-bottom: 10px;
-        }
-
-        .plyr {
-            border-radius: 5px;
-        }
-
-        ::-webkit-scrollbar {
-            width: 5px;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: #888;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: #555;
-        }
-
-        @media (max-width: 992px) {
-
-            .video-player {
-                max-width: 80%;
-                margin: auto;
-            }
-
-            .card {
-                align-items: left;
-                box-shadow: none;
-                border-radius: 0%;
-                max-width: 80%
-            }
-
-            .navbar {
-                padding-right: 15px;
-                padding-left: 15px;
-            }
-            
-        }
+        body { background-color: #111; color: white; }
+        .video-player { max-width: 900px; margin: 20px auto; padding: 10px; }
+        .vjs-big-play-centered .vjs-big-play-button { top: 50%; left: 50%; margin-top: -0.75em; margin-left: -1.5em; }
+        .container-btns { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 20px; }
+        .card { border-radius: 10px; overflow: hidden; }
     </style>
 </head>
 
@@ -106,203 +35,106 @@
         </div>
     </nav>
 
-
-    
-    <!-- PlayerJS Player -->
-
     <div class="video-player">
-    <video
-      id="player"
-      class="video-js vjs-big-play-centered"
-      controls
-      preload="auto"
-      playsinline
-      crossorigin="anonymous"
-      poster="<!-- Poster -->">
-    </video> 
+        <div id="status-msg" class="alert alert-info text-center" style="display:none;">
+            Preparing HLS Stream... Please wait.
+        </div>
+
+        <video id="player" class="video-js vjs-big-play-centered vjs-fluid" controls preload="auto" playsinline crossorigin="anonymous" poster="">
+        </video> 
         
-    <div class="card bg-light mb-3" style="margin: auto; border-radius: 5px;">
-        <div class="card-body">
-            <h5 class="card-title mb-2" style="font-weight: 600;">🎬 Name: <!-- Title --></h5>
-            <p class="card-text mb-1">🌐 <strong>Language:</strong> Multi-Language (Hindi + Others)</p>
-            <p class="card-text mb-1">📺 <strong>Quality:</strong> 720p / 480p</p>
-            <p class="card-text mb-1">⏱️ <strong>Duration:</strong> <!-- Duration --></p>
-            <p class="card-text mb-1">💾 <strong>Size:</strong> <!-- Size --></p>
-            <p class="card-text mb-0">📁 <strong>Format:</strong> <!-- Tag --></p>
+        <div class="card bg-light text-dark mt-3">
+            <div class="card-body">
+                <h5 class="card-title">🎬 </h5>
+                <p class="card-text mb-1">🌐 <strong>Language:</strong> Multi-Audio</p>
+                <p class="card-text mb-0">⏱️ <strong>Duration:</strong> </p>
+            </div>
+        </div>
+
+        <div class="container-btns">
+            <div onclick="mx_player()" class="btn btn-outline-primary">MX Player</div>
+            <div onclick="vlc_player()" class="btn btn-outline-primary">VLC Mobile</div>
+            <div onclick="copyUrl()" class="btn btn-outline-info">Copy Link</div> 
+            <div onclick="download()" class="btn btn-success">Download</div>
         </div>
     </div>
-<div class="mt-2 d-flex justify-content-center">
-  <div class="alert text-center p-3" 
-       role="alert" 
-       style="width: 90%; border-radius: 10px;">
 
-    <strong>⚠️ Unsupported Video</strong><br>
-    <small>If the video shows a black screen or doesn’t play, try an external media player.</small>
+    <script src="https://vjs.zencdn.net/8.10.0/video.min.js"></script>
 
-    <div class="mt-3">
-      <a class="btn btn-sm btn-danger w-50" href="https://t.me/Group_360hub" target="_blank">
-        Report Issue!
-      </a>
-    </div>
+    <script>
+        // 1. URL LOGIC
+        const videolink = window.location.href;
+        const url = new URL(videolink);
+        const domainUrl = url.origin;
+        const videoIdWithParams = videolink.split('/').pop();
+        const videoId = videoIdWithParams.split('?')[0];
+        const idParam = new URLSearchParams(window.location.search).get('id');
+        const hashParam = new URLSearchParams(window.location.search).get('hash');
+        const encodedName = encodeURIComponent('');
 
-  </div>
-</div>
+        const downloadlink = `${domainUrl}/${videoId}/${encodedName}?id=${idParam}&hash=${hashParam}`;
+        const rawDomain = domainUrl.replace(/^https?:\/\//, "");
+        const downloadlink1 = `${rawDomain}/${videoId}/${encodedName}?id=${idParam}&hash=${hashParam}`;
 
-    <div class="container d-flex justify-content-center align-items-center" style="width: 100%; padding: 0 5px;">
-        <div onclick="mx_player()" class="btn btn-primary">MX Player</div>
-        <div onclick="vlc_player()" class="btn btn-primary">VLC Mobile</div>
-        <div onclick="km_player()" class="btn btn-primary">KM Player</div>
-        <div onclick="get_file()" class="btn btn-primary">Get File</div>
-        <div onclick="copyUrl()" class="btn btn-primary">Copy Url</div> 
-        <div onclick="download()" class="btn btn-primary">Download</div>
-    </div>
+        // 2. INITIALIZE PLAYER
+        const player = videojs('player', {
+            playbackRates: [0.5, 1, 1.5, 2],
+            responsive: true,
+            fluid: true
+        });
 
-    <footer class="footer mt-auto py-3 text-muted text-center" style="color: white;">
-        <div class="container d-flex justify-content-center align-items-center" style="width: 100%; padding: 0 10px;">
-            <p>
-                Made with ❤️ by <a href="https://t.me/Uchiha_Developer" target="_blank">Sasuke Uchiha</a><br>
-                © 2025 <a href="https://360hub.fun" target="_blank">360Hub</a>. All Rights Reserved.
-            </p>
-        </div>
-    </footer>
+        // 3. START HLS LOGIC
+        const backendUrl = 'https://hls-converter-sy1z.onrender.com/convert';
+        const statusMsg = document.getElementById('status-msg');
 
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-0ER9KSVEH8"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-0ER9KSVEH8');
-</script>    
-
-</body>
-<script>
-    const videolink = window.location.href;
-    const url = new URL(videolink);
-    const domainUrl = url.origin;
-    const videoIdWithParams = videolink.split('/').pop();
-    const videoId = videoIdWithParams.split('?')[0];
-    const idParam = new URLSearchParams(window.location.search).get('id');
-    const hashParam = new URLSearchParams(window.location.search).get('hash');
-    const encodedName = encodeURIComponent('<!-- Filename -->');
-
-    const downloadlink = `${domainUrl}/${videoId}/${encodedName}?id=${idParam}&hash=${hashParam}`;
-    const rawDomain = domainUrl.replace(/^https?:\/\//, "");
-    const downloadlink1 = `${rawDomain}/${videoId}/${encodedName}?id=${idParam}&hash=${hashParam}`;
-
-    // 2. INITIALIZE VIDEO.JS
-    const player = videojs('player', {
-    fluid: true,
-    controls: true,
-    preload: 'auto',
-    playbackRates: [0.5, 1, 1.5, 2],
-    html5: {
-        vhs: {
-            overrideNative: true,
-            enableLowInitialPlaylist: true,
-            smoothQualityChange: true
-        },
-        nativeAudioTracks: false,
-        nativeVideoTracks: false,
-        nativeTextTracks: false
-    }
-});
-
-
-    // 3. BRIDGE: SEND LINK TO PYTHON AND START STREAM
-
-    const backendUrl = 'https://hls-converter-sy1z.onrender.com/convert';
-    
-    async function startHLSStream() {
-        console.log("Requesting HLS conversion...");
-        try {
-            const response = await fetch(backendUrl, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ url: downloadlink })
-            });
-            
-            const data = await response.json();
-
-            const hlsUrl = data.hls_link.replace(/^http:\/\//i, 'https://');
-
-            if (data.status === "success") {
-            const player = videojs('player');
-        // Give the server a tiny bit more time to write the first segment
-            setTimeout(() => {
-                player.src({
-                    src: hlsUrl,
-                    type: 'application/x-mpegURL'
+        async function startHLSStream() {
+            statusMsg.style.display = 'block';
+            try {
+                const response = await fetch(backendUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url: downloadlink })
                 });
+                const data = await response.json();
 
-
-            player.ready(() => {
-                const audioTracks = player.audioTracks();
-
-                if (audioTracks && audioTracks.length > 1) {
-                    console.log("Audio tracks detected:", audioTracks.length);
-
-                    for (let i = 0; i < audioTracks.length; i++) {
-                        audioTracks[i].enabled = (i === 0);
-                    }
+                if (data.hls_link) {
+                    loadWithRetry(data.hls_link);
+                } else {
+                    throw new Error("No link received");
                 }
-            });
-
-
-            }, 1000); 
-        } else {
-            alert("Server is busy, try again in a moment.");
+            } catch (error) {
+                console.error("HLS Failed:", error);
+                statusMsg.className = "alert alert-warning text-center";
+                statusMsg.innerHTML = "HLS Error. Playing Direct MP4...";
+                player.src({ src: downloadlink, type: 'video/mp4' });
+            }
         }
-            
-        } catch (error) {
-            console.error("HLS Conversion failed, falling back to MP4:", error);
-            player.src({ src: downloadlink, type: 'video/mp4' });
+
+        async function loadWithRetry(url, retries = 30) {
+            try {
+                const check = await fetch(url, { method: 'HEAD' });
+                if (check.ok) {
+                    statusMsg.style.display = 'none';
+                    player.src({ src: url, type: 'application/x-mpegURL' });
+                    player.play();
+                } else if (retries > 0) {
+                    setTimeout(() => loadWithRetry(url, retries - 1), 2000);
+                }
+            } catch (e) {
+                if (retries > 0) setTimeout(() => loadWithRetry(url, retries - 1), 2000);
+            }
         }
-    }
 
-    window.onload = startHLSStream;
+        // Run on load
+        window.onload = startHLSStream;
 
-    
-    
-    // External players
-    function mx_player() {
-        window.location.href = `intent:${downloadlink1}#Intent;package=com.mxtech.videoplayer.ad;end`;
-    }
-
-    function vlc_player() {
-        window.location.href = `vlc://${downloadlink1}`;
-    }
-
-    function km_player() {
-        window.location.href = `intent:${downloadlink1}#Intent;package=com.kmplayer;end`;
-    }
-
-    function download() {
-        window.location.href = downloadlink;
-    }
-
-    function get_file() {
-        const regex = /(\d+)\?id=(\d+)&/;
-        const match = videolink.match(regex);
-        if (match) {
-            const chatId = "-100" + match[1];
-            const messageId = match[2];
-            const openTG = `https://t.me/<!-- Username -->?start=file_${messageId}${chatId}`;
-            window.location.href = openTG;
+        // External Player Functions
+        function mx_player() { window.location.href = `intent:${downloadlink1}#Intent;package=com.mxtech.videoplayer.ad;end`; }
+        function vlc_player() { window.location.href = `vlc://${downloadlink1}`; }
+        function download() { window.location.href = downloadlink; }
+        function copyUrl() {
+            navigator.clipboard.writeText(downloadlink).then(() => alert('URL copied!'));
         }
-    }
-
-    function copyUrl() {
-        const url = downloadlink;
-        navigator.clipboard.writeText(url)
-            .then(() => {
-                alert('URL copied to clipboard!');
-            })
-            .catch((error) => {
-                console.error('Failed to copy URL: ', error);
-            });
-    }
-    
-</script>
+    </script>
+</body>
 </html>
