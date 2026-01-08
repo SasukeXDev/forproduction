@@ -192,82 +192,117 @@
     const downloadlink1 = `${rawDomain}/${videoId}/${encodedName}?id=${idParam}&hash=${hashParam}`;
 
     // 2. INITIALIZE VIDEO.JS
-    // INIT VIDEO.JS
-  const player = videojs('player', {
-    controls: true,
+    const player = videojs('player', {
     fluid: true,
+    controls: true,
     preload: 'auto',
     playbackRates: [0.5, 1, 1.5, 2],
     html5: {
-      vhs: {
-        overrideNative: true
-      },
-      nativeAudioTracks: false,
-      nativeTextTracks: false
+        vhs: {
+            overrideNative: true,
+            enableLowInitialPlaylist: true,
+            smoothQualityChange: true
+        },
+        nativeAudioTracks: false,
+        nativeVideoTracks: false,
+        nativeTextTracks: false
     }
-  });
+});
 
-  const backendUrl = "https://hls-converter-sy1z.onrender.com/convert";
 
-  async function startHLSStream() {
-    try {
-      console.log("Requesting HLS stream…");
+    // 3. BRIDGE: SEND LINK TO PYTHON AND START STREAM
 
-      const res = await fetch(backendUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url: downloadlink })
-      });
+    const backendUrl = 'https://hls-converter-sy1z.onrender.com/convert';
+    
+    async function startHLSStream() {
+        console.log("Requesting HLS conversion...");
+        try {
+            const response = await fetch(backendUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ url: downloadlink })
+            });
+            
+            const data = await response.json();
 
-      if (!res.ok) throw new Error("Backend error");
+            const hlsUrl = data.hls_link.replace(/^http:\/\//i, 'https://');
 
-      const data = await res.json();
+            if (data.status === "success") {
+            const player = videojs('player');
+        // Give the server a tiny bit more time to write the first segment
+            setTimeout(() => {
+                player.src({
+                    src: hlsUrl,
+                    type: 'application/x-mpegURL'
+                });
 
-      if (!data.hls) throw new Error("Invalid HLS response");
 
-      console.log("HLS ready:", data.hls);
+            player.ready(() => {
+                const audioTracks = player.audioTracks();
 
-      player.src({
-        src: data.hls,
-        type: "application/x-mpegURL"
-      });
+                if (audioTracks && audioTracks.length > 1) {
+                    console.log("Audio tracks detected:", audioTracks.length);
 
-      player.ready(() => {
-        player.play().catch(() => {});
-      });
+                    for (let i = 0; i < audioTracks.length; i++) {
+                        audioTracks[i].enabled = (i === 0);
+                    }
+                }
+            });
 
-    } catch (err) {
-      console.warn("HLS failed, falling back to MP4", err);
 
-      player.src({
-        src: downloadlink,
-        type: "video/mp4"
-      });
+            }, 1000); 
+        } else {
+            alert("Server is busy, try again in a moment.");
+        }
+            
+        } catch (error) {
+            console.error("HLS Conversion failed, falling back to MP4:", error);
+            player.src({ src: downloadlink, type: 'video/mp4' });
+        }
     }
-  }
 
-  window.addEventListener("load", startHLSStream);
+    window.onload = startHLSStream;
 
-  // External players
-  function mx_player() {
-    location.href = `intent:${downloadlink1}#Intent;package=com.mxtech.videoplayer.ad;end`;
-  }
+    
+    
+    // External players
+    function mx_player() {
+        window.location.href = `intent:${downloadlink1}#Intent;package=com.mxtech.videoplayer.ad;end`;
+    }
 
-  function vlc_player() {
-    location.href = `vlc://${downloadlink1}`;
-  }
+    function vlc_player() {
+        window.location.href = `vlc://${downloadlink1}`;
+    }
 
-  function km_player() {
-    location.href = `intent:${downloadlink1}#Intent;package=com.kmplayer;end`;
-  }
+    function km_player() {
+        window.location.href = `intent:${downloadlink1}#Intent;package=com.kmplayer;end`;
+    }
 
-  function download() {
-    location.href = downloadlink;
-  }
+    function download() {
+        window.location.href = downloadlink;
+    }
 
-  function copyUrl() {
-    navigator.clipboard.writeText(downloadlink)
-      .then(() => alert("Copied"));
-  }
+    function get_file() {
+        const regex = /(\d+)\?id=(\d+)&/;
+        const match = videolink.match(regex);
+        if (match) {
+            const chatId = "-100" + match[1];
+            const messageId = match[2];
+            const openTG = `https://t.me/<!-- Username -->?start=file_${messageId}${chatId}`;
+            window.location.href = openTG;
+        }
+    }
+
+    function copyUrl() {
+        const url = downloadlink;
+        navigator.clipboard.writeText(url)
+            .then(() => {
+                alert('URL copied to clipboard!');
+            })
+            .catch((error) => {
+                console.error('Failed to copy URL: ', error);
+            });
+    }
+    
 </script>
 </html>
