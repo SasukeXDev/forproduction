@@ -210,31 +210,29 @@
 });
 
 
+
+    
     // 3. BRIDGE: SEND LINK TO PYTHON AND START STREAM
 
+    
     const backendUrl = 'https://hls-converter-sy1z.onrender.com/convert';
     
     async function startHLSStream() {
         console.log("Requesting HLS conversion...");
         try {
             const response = await fetch(backendUrl, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ url: downloadlink })
-            });
-            
-            const data = await response.json();
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ url: tgstream_url })
+        })
+        .then(r => r.json())
+        .then(d => {
+      player.src({
+            src: d.hls,
+            type: "application/x-mpegURL"
+          });
+        });
 
-            const hlsUrl = data.hls_link.replace(/^http:\/\//i, 'https://');
-
-            if (data.status === "success") {
-            const player = videojs('player');
-        // Give the server a tiny bit more time to write the first segment
-            setTimeout(() => {
-                player.src({
-                    src: hlsUrl,
-                    type: 'application/x-mpegURL'
-                });
 
 
             player.ready(() => {
